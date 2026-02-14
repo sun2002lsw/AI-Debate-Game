@@ -3,7 +3,7 @@ from langchain_core.messages import BaseMessage, SystemMessage
 
 from persona import Persona
 from .prompts import first_announce_prompt, speak_prompt
-from .schemas import FirstAnnounceDecision
+from .schemas import FirstAnnounceDecision, SpeakResponse
 
 
 class Character:
@@ -22,14 +22,15 @@ class Character:
         result: FirstAnnounceDecision = response  # type: ignore[assignment]
         return result.want_first, result.reason
 
-    def speak(self, topic: str, chat_history: list[BaseMessage], remain: int) -> str:
+    def speak(self, topic: str, chat_history: list[BaseMessage], remain_cnt: int) -> SpeakResponse:
+        structured_llm = self.llm.with_structured_output(SpeakResponse)
         formatted_chat_history = self._format_chat_history(chat_history)
 
-        prompt = speak_prompt(topic, self.persona, formatted_chat_history, remain)
+        prompt = speak_prompt(topic, self.persona, formatted_chat_history, remain_cnt)
         messages = [SystemMessage(content=prompt)]
 
-        response = self.llm.invoke(messages)
-        result: str = response.content  # type: ignore[assignment]
+        response = structured_llm.invoke(messages)
+        result: SpeakResponse = response  # type: ignore[assignment]
         return result
 
     def _format_chat_history(self, chat_history: list[BaseMessage]) -> str:

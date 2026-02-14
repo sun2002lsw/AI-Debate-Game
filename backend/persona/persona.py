@@ -9,12 +9,8 @@ class Persona:
         if not persona_dir.exists():
             raise FileNotFoundError(f"Persona directory not found: {persona_dir}")
 
-        self.name, self.age, self.summary = self._parse_personal_info(
-            persona_dir / "info.txt"
-        )
-        self.strategy = (
-            (persona_dir / "strategy.txt").read_text(encoding="utf-8").strip()
-        )
+        self.name, self.age, self.summary = self._parse_personal_info(persona_dir / "info.txt")
+        self.strategy = (persona_dir / "strategy.txt").read_text(encoding="utf-8").strip()
 
     @staticmethod
     def _parse_personal_info(path: Path) -> tuple[str, int, str]:

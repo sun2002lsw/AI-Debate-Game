@@ -44,20 +44,20 @@ class Debate:
             self.start_speak_idx,
         )
 
-    def speaking(self) -> tuple[int, str]:
+    def speaking(self) -> tuple[int, str, str]:
         speaker = self.speakers[self._speaker_idx()]
-        message = speaker.speak(self.topic, self.chat_history, self._remain_speak())
-        self.chat_history.append(AIMessage(content=message, name=speaker.name))
+        response = speaker.speak(self.topic, self.chat_history, self._remain_cnt())
+        self.chat_history.append(AIMessage(content=response.message, name=speaker.name))
 
         current_speak_idx = self._speaker_idx()
         self.current_speak_idx += 1
 
-        return current_speak_idx, message
+        return current_speak_idx, response.emotion.value, response.message
 
     def _speaker_idx(self) -> int:
         return (self.start_speak_idx + self.current_speak_idx) % 2
 
-    def _remain_speak(self) -> int:
+    def _remain_cnt(self) -> int:
         return (self.max_speak_idx - self.current_speak_idx) // 2
 
     def close(self) -> str:

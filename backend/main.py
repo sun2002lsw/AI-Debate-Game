@@ -25,9 +25,7 @@ def main():
     debate = Debate(topic=topic, pro=pro, con=con, max_rounds=2)
 
     # 1) 선공 결정
-    pro_want_first, pro_reason, con_want_first, con_reason, first_idx = (
-        debate.pick_first_announce()
-    )
+    pro_want_first, pro_reason, con_want_first, con_reason, first_idx = debate.pick_first_announce()
 
     print(f"[선공 결정]")
     print(f"찬성측: {'선공 희망' if pro_want_first else '후공 희망'} - {pro_reason}")
@@ -37,8 +35,8 @@ def main():
 
     # 2) 토론 진행
     while not debate.finished():
-        speaker_idx, message = debate.speaking()
-        print(f"{speaker(speaker_idx)}: {message}")
+        speaker_idx, emotion, message = debate.speaking()
+        print(f"{speaker(speaker_idx)}: ({emotion}) {message}")
 
     # 3) 종료
     print(debate.close())

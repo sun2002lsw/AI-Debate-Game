@@ -14,9 +14,13 @@ def first_announce_prompt(topic: str, persona: Persona) -> str:
 def speak_prompt(topic: str, persona: Persona, chat_history: str, remain: int) -> str:
     return (
         f"{_common_prompt(topic, persona)}"
+        f"## 발언 규칙\n"
+        f"- 이모지 금지. 예: (😀), (👍) 등 금지.\n"
+        f"- 행동 묘사 금지. 예: (일어나며), (소리친다), *주먹을 쥐며* 등 금지.\n"
+        f"- 감정은 별도 필드로 표현되므로, 발언 텍스트에는 순수한 말만 작성하세요.\n\n"
         f"## 지금까지의 대화\n"
-        f"{chat_history}"
-        f"(이제 당신이 발언할 차례입니다. 남은 발언 횟수를 참고하여 발언 하세요.)"
+        f"{chat_history}\n\n"
+        f"(이제 당신이 발언할 차례입니다. 남은 발언 횟수를 참고하여 발언 하세요.)\n"
         f"(남은 발언 횟수: {remain}회. {"최후 발언을 해주세요." if remain == 1 else ""})"
     )
 
@@ -25,7 +29,8 @@ def _common_prompt(topic: str, persona: Persona) -> str:
     return (
         f"당신은 현재 토론에 참가한 참가자입니다.\n"
         f"토론에서 승리하기 위해 최선을 다하십시오.\n\n"
-        f"토론 주제: {topic}\n\n"
+        f"## 토론 주제\n"
+        f"[{topic}]\n\n"
         f"당신은 당신만의 페르소나를 가지고 있습니다.\n"
         f"당신의 페르소나에 맞게 생각하고 말투와 논리를 구성하십시오.\n\n"
         f"## 당신의 신상 정보\n"
