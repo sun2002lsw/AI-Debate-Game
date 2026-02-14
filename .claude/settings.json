@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(source:*)",
+      "Bash(pip:*)",
+      "Bash(pip install:*)",
+      "Bash(npm:*)",
+      "Bash(npx:*)",
+      "Bash(node:*)",
+      "Bash(curl:*)",
+      "Bash(git:*)",
+      "Bash(cd:*)",
+      "Bash(ls:*)",
+      "Bash(mkdir:*)",
+      "Bash(cp:*)",
+      "Bash(mv:*)",
+      "Bash(cat:*)",
+      "Bash(echo:*)",
+      "Bash(python:*)",
+      "Bash(pytest:*)",
+      "Bash(uvicorn:*)",
+      "Bash(claude:*)",
+      "Bash(.venv/Scripts/activate:*)",
+      "WebSearch",
+      "WebFetch",
+      "Bash(where:*)"
+    ]
+  }
+}
