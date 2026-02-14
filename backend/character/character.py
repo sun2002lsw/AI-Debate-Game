@@ -1,8 +1,8 @@
 from langchain_core.language_models.chat_models import BaseChatModel
-from langchain_core.messages import BaseMessage, SystemMessage
+from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage
 
 from persona import Persona
-from .prompts import first_announce_prompt, speak_prompt
+from .prompts import get_system_prompt, get_first_prompt, get_speak_prompt
 from .schemas import FirstAnnounceDecision, SpeakResponse
 
 
@@ -13,23 +13,33 @@ class Character:
         self.llm = llm
 
     def want_first_announce(self, topic: str) -> tuple[bool, str]:
+        messages: list[BaseMessage] = []
+
+        system_prompt = get_system_prompt(topic, self.persona)
+        messages.append(SystemMessage(content=system_prompt))
+
+        first_prompt = get_first_prompt()
+        messages.append(HumanMessage(content=first_prompt))
+
         structured_llm = self.llm.with_structured_output(FirstAnnounceDecision)
-
-        prompt = first_announce_prompt(topic, self.persona)
-        messages = [SystemMessage(content=prompt)]
-
         response = structured_llm.invoke(messages)
+
         result: FirstAnnounceDecision = response  # type: ignore[assignment]
         return result.want_first, result.reason
 
     def speak(self, topic: str, chat_history: list[BaseMessage], remain_cnt: int) -> SpeakResponse:
-        structured_llm = self.llm.with_structured_output(SpeakResponse)
+        messages: list[BaseMessage] = []
+
+        system_prompt = get_system_prompt(topic, self.persona)
+        messages.append(SystemMessage(content=system_prompt))
+
         formatted_chat_history = self._format_chat_history(chat_history)
+        speak_prompt = get_speak_prompt(formatted_chat_history, remain_cnt)
+        messages.append(HumanMessage(content=speak_prompt))
 
-        prompt = speak_prompt(topic, self.persona, formatted_chat_history, remain_cnt)
-        messages = [SystemMessage(content=prompt)]
-
+        structured_llm = self.llm.with_structured_output(SpeakResponse)
         response = structured_llm.invoke(messages)
+
         result: SpeakResponse = response  # type: ignore[assignment]
         return result
 

@@ -26,11 +26,7 @@ class FirstAnnounceDecision(BaseModel):
 
 class SpeakResponse(BaseModel):
     emotion: Emotion = Field(description="현재 감정 상태")
-    message: str = Field(
-        min_length=100,
-        max_length=300,
-        description="발언 내용 (100~300자, 이모지 금지, 행동 묘사 금지)",
-    )
+    message: str = Field(description="발언 내용")
 
     @field_validator("message")
     @classmethod
