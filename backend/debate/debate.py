@@ -6,9 +6,9 @@ from langchain_core.messages import BaseMessage, AIMessage, HumanMessage
 from character import Character
 
 
-class Session:
+class Debate:
     def __init__(self, topic: str, pro: Character, con: Character, max_rounds: int):
-        self.session_id = str(uuid.uuid4())
+        self.debate_id = str(uuid.uuid4())
         self.topic = topic
 
         self.pro = pro

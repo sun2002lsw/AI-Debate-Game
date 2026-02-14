@@ -1,3 +1,3 @@
-from .session import Session
+from .debate import Debate
 
-__all__ = ["Session"]
+__all__ = ["Debate"]

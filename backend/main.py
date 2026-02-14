@@ -9,8 +9,9 @@ warnings.filterwarnings(
     module="pydantic",
 )
 
-from character import Character, Persona
-from debate.session import Session
+from character import Character
+from persona import Persona
+from debate import Debate
 from llm.factory import create_llm
 
 
@@ -21,26 +22,26 @@ def main():
     pro = Character(id=0, persona=Persona("yuna"), llm=llm)
     con = Character(id=1, persona=Persona("socrates"), llm=llm)
 
-    session = Session(topic=topic, pro=pro, con=con, max_rounds=2)
+    debate = Debate(topic=topic, pro=pro, con=con, max_rounds=2)
 
     # 1) 선공 결정
-    pro_want, pro_reason, con_want, con_reason, first_idx = (
-        session.pick_first_announce()
+    pro_want_first, pro_reason, con_want_first, con_reason, first_idx = (
+        debate.pick_first_announce()
     )
 
     print(f"[선공 결정]")
-    print(f"찬성측: {'선공 희망' if pro_want else '후공 희망'} - {pro_reason}")
-    print(f"반대측: {'선공 희망' if con_want else '후공 희망'} - {con_reason}")
+    print(f"찬성측: {'선공 희망' if pro_want_first else '후공 희망'} - {pro_reason}")
+    print(f"반대측: {'선공 희망' if con_want_first else '후공 희망'} - {con_reason}")
     print(f"→ {speaker(first_idx)}이 먼저 발언합니다.")
     print()
 
     # 2) 토론 진행
-    while not session.finished():
-        speaker_idx, message = session.speaking()
+    while not debate.finished():
+        speaker_idx, message = debate.speaking()
         print(f"{speaker(speaker_idx)}: {message}")
 
     # 3) 종료
-    print(session.close())
+    print(debate.close())
 
 
 def speaker(idx: int) -> str:

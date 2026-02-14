@@ -1,4 +1,4 @@
-from .persona import Persona
+from persona import Persona
 
 
 def first_announce_prompt(topic: str, persona: Persona) -> str:
@@ -17,7 +17,7 @@ def speak_prompt(topic: str, persona: Persona, chat_history: str, remain: int) -
         f"## 지금까지의 대화\n"
         f"{chat_history}"
         f"(이제 당신이 발언할 차례입니다. 남은 발언 횟수를 참고하여 발언 하세요.)"
-        f"(남은 발언 횟수: {remain}회. {"마지막 발언입니다!" if remain == 1 else ""})"
+        f"(남은 발언 횟수: {remain}회. {"최후 발언을 해주세요." if remain == 1 else ""})"
     )
 
 

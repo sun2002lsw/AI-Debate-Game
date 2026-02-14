@@ -1,7 +1,7 @@
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import BaseMessage, SystemMessage
 
-from .persona import Persona
+from persona import Persona
 from .prompts import first_announce_prompt, speak_prompt
 from .schemas import FirstAnnounceDecision
 
