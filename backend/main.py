@@ -19,8 +19,8 @@ def main():
     topic = "인공지능이 인간의 일자리를 대체해야 하는가"
 
     llm = create_llm("gpt-4o")
-    pro = Character(id=0, persona=Persona("yuna"), llm=llm)
-    con = Character(id=1, persona=Persona("socrates"), llm=llm)
+    pro = Character(id=0, persona=Persona("crybaby"), llm=llm)
+    con = Character(id=1, persona=Persona("thug"), llm=llm)
 
     debate = Debate(topic=topic, pro=pro, con=con, max_rounds=2)
 
