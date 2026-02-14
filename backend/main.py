@@ -1,77 +1,52 @@
-from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+import warnings
 
-from character import Character
-from debate import Session
+from dotenv import load_dotenv
 
-app = FastAPI()
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
-    allow_methods=["*"],
-    allow_headers=["*"],
+warnings.filterwarnings(
+    "ignore",
+    message="Pydantic serializer warnings",
+    category=UserWarning,
+    module="pydantic",
 )
 
-# 인메모리 세션 저장소
-sessions: dict[str, Session] = {}
+from character import Character, Persona
+from debate.session import Session
+from llm.factory import create_llm
 
 
-class CharacterCreate(BaseModel):
-    name: str
-    age: int
+def main():
+    topic = "인공지능이 인간의 일자리를 대체해야 하는가"
+
+    llm = create_llm("gpt-4o")
+    pro = Character(id=0, persona=Persona("yuna"), llm=llm)
+    con = Character(id=1, persona=Persona("socrates"), llm=llm)
+
+    session = Session(topic=topic, pro=pro, con=con, max_rounds=2)
+
+    # 1) 선공 결정
+    pro_want, pro_reason, con_want, con_reason, first_idx = (
+        session.pick_first_announce()
+    )
+
+    print(f"[선공 결정]")
+    print(f"찬성측: {'선공 희망' if pro_want else '후공 희망'} - {pro_reason}")
+    print(f"반대측: {'선공 희망' if con_want else '후공 희망'} - {con_reason}")
+    print(f"→ {speaker(first_idx)}이 먼저 발언합니다.")
+    print()
+
+    # 2) 토론 진행
+    while not session.finished():
+        speaker_idx, message = session.speaking()
+        print(f"{speaker(speaker_idx)}: {message}")
+
+    # 3) 종료
+    print(session.close())
 
 
-class SessionCreate(BaseModel):
-    topic: str
-    pro: CharacterCreate
-    con: CharacterCreate
-    max_rounds: int = 3
+def speaker(idx: int) -> str:
+    return "반대측" if idx else "찬성측"
 
 
-@app.get("/")
-def root():
-    return {"message": "hello world"}
-
-
-@app.post("/api/debate")
-def create_debate(body: SessionCreate):
-    pro = Character(body.pro.name, body.pro.age)
-    con = Character(body.con.name, body.con.age)
-
-    session = Session(body.topic, pro, con, body.max_rounds)
-    result = session.opening()
-
-    sessions[session.session_id] = session
-    return result
-
-
-@app.post("/api/debate/{session_id}/speak")
-def speak(session_id: str):
-    session = sessions.get(session_id)
-    if not session:
-        raise HTTPException(status_code=404, detail="세션을 찾을 수 없습니다")
-
-    try:
-        return session.speaking()
-    except RuntimeError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
-
-@app.get("/api/debate/{session_id}/history")
-def get_history(session_id: str):
-    session = sessions.get(session_id)
-    if not session:
-        raise HTTPException(status_code=404, detail="세션을 찾을 수 없습니다")
-
-    return session.get_history()
-
-
-@app.get("/api/debate/{session_id}/status")
-def get_status(session_id: str):
-    session = sessions.get(session_id)
-    if not session:
-        raise HTTPException(status_code=404, detail="세션을 찾을 수 없습니다")
-
-    return session.get_status()
+if __name__ == "__main__":
+    load_dotenv()
+    main()
