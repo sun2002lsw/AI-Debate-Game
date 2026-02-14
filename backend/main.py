@@ -18,7 +18,7 @@ from llm.factory import create_llm
 def main():
     topic = "인공지능이 인간의 일자리를 대체해야 하는가"
 
-    llm = create_llm("gpt-4o")
+    llm = create_llm("gemini-2.5-pro")
     pro = Character(id=0, persona=Persona("crybaby"), llm=llm)
     con = Character(id=1, persona=Persona("thug"), llm=llm)
 

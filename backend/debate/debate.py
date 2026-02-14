@@ -25,7 +25,7 @@ class Debate:
         return self.current_speak_idx == self.max_speak_idx
 
     def pick_first_announce(self) -> tuple[bool, str, bool, str, int]:
-        message = f"{self.topic} 주제에 대한 토론을 시작하겠습니다."
+        message = f"[{self.topic}] 주제에 대한 토론을 시작하겠습니다."
         self.chat_history.append(HumanMessage(content=message))
 
         pro_want_first, pro_reason = self.pro.want_first_announce(self.topic)
@@ -61,4 +61,4 @@ class Debate:
         return (self.max_speak_idx - self.current_speak_idx) // 2
 
     def close(self) -> str:
-        return f"{self.topic} 주제에 대한 토론이 종료되었습니다."
+        return f"[{self.topic}] 주제에 대한 토론이 종료되었습니다."
