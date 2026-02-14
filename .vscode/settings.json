@@ -2,5 +2,9 @@
   "files.exclude": {
     "**/__pycache__": true,
     "**/.venv": true
+  },
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter",
+    "editor.formatOnSave": true
   }
 }

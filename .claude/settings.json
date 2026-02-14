@@ -23,7 +23,8 @@
       "Bash(.venv/Scripts/activate:*)",
       "WebSearch",
       "WebFetch",
-      "Bash(where:*)"
+      "Bash(where:*)",
+      "mcp__context7__query-docs"
     ]
   }
 }
