@@ -9,12 +9,12 @@ from langchain_core.language_models.chat_models import BaseChatModel
 
 
 _RECOMMENDED_MODELS: list[str] = [
-    "gemini-2.5-pro",
+    "claude-haiku-3.5-20241022",
+    "claude-sonnet-4-20250514",
     "gemini-2.5-flash",
+    "gemini-2.5-pro",
     "gpt-4o",
     "gpt-4o-mini",
-    "claude-sonnet-4-20250514",
-    "claude-haiku-3.5-20241022",
 ]
 
 
@@ -37,25 +37,29 @@ _PROVIDER_ENV_KEYS: dict[str, str] = {
 
 def list_models() -> list[str]:
     """추천 LLM 모델 이름 리스트를 반환."""
-    return list(_RECOMMENDED_MODELS)
+    return sorted(_RECOMMENDED_MODELS)
 
 
-def resolve_model(value: str | int) -> str:
-    """str | int → 검증된 model_name 문자열. 리스트에 없으면 에러."""
-    choices = list_models()
+def _get_model_name(value: str | int) -> str:
+    """str | int → model_name 문자열. 리스트에 없으면 에러."""
+    models = list_models()
 
     if isinstance(value, int):
-        if not (0 <= value < len(choices)):
+        if not (0 <= value < len(models)):
             raise IndexError(f"Model 인덱스 {value}가 범위를 벗어났습니다.")
-        return choices[value]
+        return models[value]
 
-    if value not in choices:
-        raise ValueError(f"알 수 없는 Model: {value}")
+    for m in models:
+        if m == value:
+            return m
 
-    return value
+    raise ValueError(f"알 수 없는 Model: {value}")
 
 
-def create_llm(model_name: str) -> BaseChatModel:
+def create_llm(value: str | int) -> BaseChatModel:
+    """str | int → BaseChatModel 객체. 리스트에 없으면 에러."""
+    model_name = _get_model_name(value)
+
     provider = _resolve_provider(model_name)
     env_key = _PROVIDER_ENV_KEYS[provider]
     api_key = os.environ.get(env_key)

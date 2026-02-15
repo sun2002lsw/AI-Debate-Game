@@ -5,23 +5,19 @@ from __future__ import annotations
 import uuid
 
 from persona import create_persona
-from llm.factory import create_llm, resolve_model
+from llm.factory import create_llm
 
 from .character import Character
 
 
 def create_character(
-    *,
     topic: str,
     is_pro: bool,
     persona: str | int,
     model: str | int,
 ) -> Character:
     character_id = uuid.uuid4().hex[:8]
-
     persona_obj = create_persona(persona)
-
-    model_name = resolve_model(model)
-    llm = create_llm(model_name)
+    llm = create_llm(model)
 
     return Character(id=character_id, topic=topic, is_pro=is_pro, persona=persona_obj, llm=llm)

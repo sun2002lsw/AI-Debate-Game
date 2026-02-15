@@ -17,7 +17,7 @@ backend/
     factory.py         #   create_persona() 팩토리 + list_personas()
     personas/          #   페르소나 데이터 (philosopher, crybaby, psycho, thug)
   llm/                 # LLM 모듈 — 다중 프로바이더 지원
-    factory.py         #   create_llm() 팩토리 + list_models(), resolve_model()
+    factory.py         #   create_llm() 팩토리 + list_models()
 frontend/
   src/App.jsx          # React 앱 (Vite, localhost:5173)
 .claude/
