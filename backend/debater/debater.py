@@ -16,7 +16,7 @@ warnings.filterwarnings(
 
 class Debater:
     def __init__(self, id: str, persona: Persona, llm: BaseChatModel):
-        self.name = f"{persona.name}-{id}"
+        self.id = id
         self.persona = persona
         self.llm = llm
 
@@ -72,9 +72,9 @@ class Debater:
         lines: list[str] = []
         for chat in chat_history:
             speaker = "알 수 없음"
-            if not chat.name or chat.name == "":
+            if not chat.id or chat.id == "":
                 speaker = "사회자"
-            elif chat.name == self.name:
+            elif chat.id == self.id:
                 speaker = "당신"
             else:
                 speaker = "상대방"

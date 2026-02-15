@@ -48,7 +48,7 @@ class Debate:
             response = speaker.first_speak(self.topic, is_pro)
         else:
             response = speaker.next_speak(self.topic, is_pro, self.chat_history, self._remain_cnt())
-        self.chat_history.append(AIMessage(content=response.message, name=speaker.name))
+        self.chat_history.append(AIMessage(content=response.message, id=speaker.id))
         self.current_speak_idx += 1
 
         return speaker_idx, response.emotion.value, response.message

@@ -1,5 +1,3 @@
-"""Persona factory -- 문자열/인덱스로 Persona를 생성."""
-
 from __future__ import annotations
 
 from .persona import Persona, PERSONAS_DIR

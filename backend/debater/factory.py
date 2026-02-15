@@ -1,5 +1,3 @@
-"""Debater factory -- 문자열만으로 Debater를 생성."""
-
 from __future__ import annotations
 
 import uuid
