@@ -3,24 +3,23 @@ import random
 from langchain_core.messages import BaseMessage, AIMessage
 
 from debater import Debater
+from moderator import Moderator, DebateScore
+from .score_calculator import calculate
 
 
 class Debate:
-    def __init__(self, topic: str, speak_cnt: int, pro: Debater, con: Debater):
+    def __init__(self, topic: str, speak_cnt: int, pro: Debater, con: Debater, moderator: Moderator):
         self.topic = topic
         self.max_speak_idx = speak_cnt * 2 - 1  # 다들 각자 한번씩 말해야 하니깐
 
         self.pro = pro
         self.con = con
-        self.speakers = (pro, con)
+        self.moderator = moderator
 
+        self.speakers = (pro, con)
         self.start_speak_idx = 0
         self.current_speak_idx = 0
-
         self.chat_history: list[BaseMessage] = []
-
-    def finished(self) -> bool:
-        return self.current_speak_idx > self.max_speak_idx
 
     def pick_first(self) -> tuple[bool, str, bool, str, int]:
         pro_want_first, pro_reason = self.pro.want_first(self.topic, True)
@@ -38,6 +37,9 @@ class Debate:
             con_reason,
             self.start_speak_idx,
         )
+
+    def finished(self) -> bool:
+        return self.current_speak_idx > self.max_speak_idx
 
     def speaking(self) -> tuple[int, str, str]:
         speaker_idx = self._speaker_idx()
@@ -59,5 +61,18 @@ class Debate:
     def _remain_cnt(self) -> int:
         return (self.max_speak_idx - self.current_speak_idx) // 2 + 1  # 남은 횟수는 인덱스 + 1
 
-    def close(self) -> str:
-        return f"[{self.topic}] 주제에 대한 토론이 종료되었습니다."
+    def interrupt(self, message: str) -> str:
+        if len(message) == 0:
+            message = self.moderator.interrupt(self.topic, self.chat_history)
+        self.chat_history.append(AIMessage(content=message, id=""))
+        return message
+
+    def analyze(self) -> tuple[DebateScore, float, DebateScore, float]:
+        scores = self.moderator.analyze(self.topic, self.chat_history)
+
+        pro_scores = scores[self.pro.id]
+        pro_result = calculate(pro_scores)
+        con_scores = scores[self.con.id]
+        con_result = calculate(con_scores)
+
+        return pro_scores, pro_result, con_scores, con_result

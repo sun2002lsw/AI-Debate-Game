@@ -3,8 +3,9 @@ from dotenv import load_dotenv
 from common.warnings import configure as configure_warnings
 from debater import create_debater
 from persona import list_personas
-from llm import list_models
+from llm import list_models, create_llm
 from debate import Debate
+from moderator import Moderator
 
 
 COLORS = ["\033[94m", "\033[91m", "\033[93m"]  # 찬성=파랑, 반대=빨강, 사회=노랑
@@ -29,13 +30,15 @@ def main():
     pro_model = int(input("찬성측 모델 선택: "))
     con_perso = int(input("반대측 인격 선택: "))
     con_model = int(input("반대측 모델 선택: "))
+    mod_model = int(input("사회자 모델 선택: "))
     print()
 
     # 토론 참가자 생성
     pro = create_debater(persona=pro_perso, model=pro_model)
     con = create_debater(persona=con_perso, model=con_model)
+    moderator = Moderator(llm=create_llm(mod_model))
 
-    debate = Debate(topic=topic, speak_cnt=speak_cnt, pro=pro, con=con)
+    debate = Debate(topic=topic, speak_cnt=speak_cnt, moderator=moderator, pro=pro, con=con)
 
     # 1) 선공 결정
     pro_want_first, pro_reason, con_want_first, con_reason, first_idx = debate.pick_first()
@@ -55,7 +58,37 @@ def main():
         print(f"{COLORS[speaker_idx]}{speaker}: ({emotion}) {message}{RESET}")
 
     # 3) 종료
-    print(f"\n{COLORS[2]}{debate.close()}{RESET}")
+    print(f"\n{COLORS[2]}[{topic}] 주제에 대한 토론이 종료되었습니다.{RESET}")
+
+    # 4) 평가
+    pro_scores, pro_result, con_scores, con_result = debate.analyze()
+
+    labels = {
+        "relevance": "주제 적합성",
+        "logic": "논리성     ",
+        "persuasiveness": "설득력     ",
+        "rebuttal": "반박 능력  ",
+        "evidence": "근거 활용  ",
+        "manner": "태도       ",
+    }
+
+    print(f"\n{COLORS[2]}===== 토론 평가 결과 ====={RESET}")
+    for side, color, scores, result in [
+        ("찬성측", COLORS[0], pro_scores, pro_result),
+        ("반대측", COLORS[1], con_scores, con_result),
+    ]:
+        print(f"\n{color}{side} 최종 점수: {result:>5}점{RESET}")
+        for field, label in labels.items():
+            elem = getattr(scores, field)
+            print(f"{color}  {label}  {elem.score:>5}점 — {elem.reason}{RESET}")
+
+    # 5) 판정
+    if pro_result > con_result:
+        print(f"\n{COLORS[2]}찬성측이 승리하였습니다.{RESET}")
+    elif pro_result < con_result:
+        print(f"\n{COLORS[2]}반대측이 승리하였습니다.{RESET}")
+    else:
+        print(f"\n{COLORS[2]}무승부입니다.{RESET}")
 
 
 if __name__ == "__main__":
