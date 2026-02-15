@@ -12,7 +12,7 @@ RESET = "\033[0m"
 
 def main():
     debate_topic = input("토론 주제: ")
-    debate_round = input("토론 횟수: ")
+    debate_round = int(input("토론 횟수: "))
 
     print("\n===== 페르소나 목록 =====")
     personas = list_personas()
@@ -41,7 +41,7 @@ def main():
     pro_choice = "선공 희망" if pro_want_first else "후공 희망"
     con_choice = "선공 희망" if con_want_first else "후공 희망"
 
-    print(f"{COLORS[2]}이 먼저 발언합니다.{RESET}")
+    print(f"{COLORS[2]}먼저 발언할 토론자를 선택합니다.{RESET}")
     print(f"{COLORS[0]}찬성측: {pro_choice} - {pro_reason}{RESET}")
     print(f"{COLORS[1]}반대측: {con_choice} - {con_reason}{RESET}")
     print(f"{COLORS[2]}→ {"반대측" if first_idx else "찬성측"}이 먼저 발언합니다.{RESET}")
