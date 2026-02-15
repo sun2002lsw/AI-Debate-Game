@@ -1,9 +1,22 @@
+from __future__ import annotations
+
 import os
 
 from langchain_openai import ChatOpenAI
 from langchain_anthropic import ChatAnthropic
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.language_models.chat_models import BaseChatModel
+
+
+_RECOMMENDED_MODELS: list[str] = [
+    "gemini-2.5-pro",
+    "gemini-2.5-flash",
+    "gpt-4o",
+    "gpt-4o-mini",
+    "claude-sonnet-4-20250514",
+    "claude-haiku-3.5-20241022",
+]
+
 
 _PROVIDER_PREFIXES: dict[str, str] = {
     "gpt-": "openai",
@@ -20,6 +33,26 @@ _PROVIDER_ENV_KEYS: dict[str, str] = {
     "anthropic": "ANTHROPIC_API_KEY",
     "google": "GOOGLE_API_KEY",
 }
+
+
+def list_models() -> list[str]:
+    """추천 LLM 모델 이름 리스트를 반환."""
+    return list(_RECOMMENDED_MODELS)
+
+
+def resolve_model(value: str | int) -> str:
+    """str | int → 검증된 model_name 문자열. 리스트에 없으면 에러."""
+    choices = list_models()
+
+    if isinstance(value, int):
+        if not (0 <= value < len(choices)):
+            raise IndexError(f"Model 인덱스 {value}가 범위를 벗어났습니다.")
+        return choices[value]
+
+    if value not in choices:
+        raise ValueError(f"알 수 없는 Model: {value}")
+
+    return value
 
 
 def create_llm(model_name: str) -> BaseChatModel:

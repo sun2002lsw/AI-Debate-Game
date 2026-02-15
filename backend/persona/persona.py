@@ -1,14 +1,13 @@
 from pathlib import Path
 
-_PERSONAS_DIR = Path(__file__).parent / "personas"
+PERSONAS_DIR = Path(__file__).parent / "personas"
 
 
 class Persona:
     def __init__(self, persona_id: str):
-        persona_dir = _PERSONAS_DIR / persona_id
-        if not persona_dir.exists():
-            raise FileNotFoundError(f"Persona directory not found: {persona_dir}")
+        persona_dir = PERSONAS_DIR / persona_id
 
+        self.id = persona_id
         self.name, self.age, self.summary = self._parse_personal_info(persona_dir / "info.txt")
         self.strategy = (persona_dir / "strategy.txt").read_text(encoding="utf-8").strip()
 

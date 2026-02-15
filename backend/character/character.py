@@ -4,6 +4,8 @@ from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage
 
 from persona import Persona
+from .prompts import get_system_prompt, get_first_prompt, get_speak_prompt
+from .schemas import FirstAnnounceDecision, SpeakResponse
 
 warnings.filterwarnings(
     "ignore",
@@ -11,13 +13,11 @@ warnings.filterwarnings(
     category=UserWarning,
     module="pydantic",
 )
-from .prompts import get_system_prompt, get_first_prompt, get_speak_prompt
-from .schemas import FirstAnnounceDecision, SpeakResponse
 
 
 class Character:
-    def __init__(self, id: int, is_pro: bool, persona: Persona, llm: BaseChatModel):
-        self.name = "-".join([persona.name, str(id)])
+    def __init__(self, id: str, is_pro: bool, persona: Persona, llm: BaseChatModel):
+        self.name = f"{persona.name}-{id}"
         self.is_pro = is_pro
         self.persona = persona
         self.llm = llm
