@@ -38,7 +38,13 @@ def main():
     con = create_debater(persona=con_perso, model=con_model)
     moderator = Moderator(llm=create_llm(mod_model))
 
-    debate = Debate(topic=topic, speak_cnt=speak_cnt, moderator=moderator, pro=pro, con=con)
+    def speak_ready_noti(speaker_idx: int):
+        speaker = "반대측" if speaker_idx else "찬성측"
+        print(f"\n{COLORS[2]}{speaker}의 발언이 준비되었습니다.{RESET}")
+
+    debate = Debate(
+        topic=topic, speak_cnt=speak_cnt, speak_ready_noti=speak_ready_noti, moderator=moderator, pro=pro, con=con
+    )
 
     # 1) 선공 결정
     pro_want_first, pro_reason, con_want_first, con_reason, first_idx = debate.pick_first()
@@ -52,8 +58,11 @@ def main():
     print()
 
     # 2) 토론 진행
+    debate.prepare()
+
     while not debate.finished():
-        speaker_idx, emotion, message = debate.speaking()
+        input()
+        speaker_idx, emotion, message = debate.listen()
         speaker = "반대측" if speaker_idx else "찬성측"
         print(f"{COLORS[speaker_idx]}{speaker}: ({emotion}) {message}{RESET}")
 
