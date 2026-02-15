@@ -43,5 +43,10 @@ frontend/
 - Windows의 Python 기본 인코딩은 cp949이므로, 한글이 포함된 파일을 `open()`할 때 반드시 `encoding='utf-8'`을 지정할 것
 - Bash에서 Python 코드를 인라인 실행(`python -c`)할 때도 동일하게 주의
 
+### Import 규칙
+- 모듈의 공개 API를 전부(또는 대부분) 가져올 때는 `from . import module` 방식을 사용하고, `module.name`으로 접근
+- 1~2개만 가져올 때는 `from module import name` 방식 허용
+- `__init__.py`의 re-export는 `from .module import name` 방식 유지
+
 ### 파일 포맷
 - 모든 파일은 POSIX 규칙에 따라 마지막에 반드시 빈 줄(trailing newline)을 포함할 것
