@@ -2,14 +2,27 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Run Main",
+      "name": "CLI Debug",
       "type": "debugpy",
       "request": "launch",
-      "module": "main",
+      "module": "cli",
       "cwd": "${workspaceFolder}/backend",
       "python": "${workspaceFolder}/.venv/Scripts/python.exe",
       "console": "integratedTerminal",
       "envFile": "${workspaceFolder}/.env"
+    },
+    {
+      "name": "FastAPI Debug",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "uvicorn",
+      "args": ["main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"],
+      "cwd": "${workspaceFolder}/backend",
+      "python": "${workspaceFolder}/.venv/Scripts/python.exe",
+      "console": "integratedTerminal",
+      "envFile": "${workspaceFolder}/.env",
+      "preLaunchTask": "Start Frontend Dev",
+      "postDebugTask": "Stop Frontend Dev"
     }
   ]
 }
