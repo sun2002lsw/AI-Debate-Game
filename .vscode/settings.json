@@ -1,4 +1,5 @@
 {
+  "python.defaultInterpreterPath": "${workspaceFolder}/.venv/Scripts/python.exe",
   "debug.terminal.clearBeforeReusing": true,
   "files.exclude": {
     "**/__pycache__": true,

@@ -61,7 +61,7 @@ def main():
     print(f"\n{COLORS[2]}[{topic}] 주제에 대한 토론이 종료되었습니다.{RESET}")
 
     # 4) 평가
-    pro_scores, pro_result, con_scores, con_result = debate.analyze()
+    pro_scores, pro_result, con_scores, con_result = debate.score_calculate()
 
     labels = {
         "relevance": "주제 적합성",
@@ -77,7 +77,7 @@ def main():
         ("찬성측", COLORS[0], pro_scores, pro_result),
         ("반대측", COLORS[1], con_scores, con_result),
     ]:
-        print(f"\n{color}{side} 최종 점수: {result:>5}점{RESET}")
+        print(f"\n{color}{side} 총점: {result:>5}점{RESET}")
         for field, label in labels.items():
             elem = getattr(scores, field)
             print(f"{color}  {label}  {elem.score:>5}점 — {elem.reason}{RESET}")

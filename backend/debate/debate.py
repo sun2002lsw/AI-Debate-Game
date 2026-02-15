@@ -61,13 +61,13 @@ class Debate:
     def _remain_cnt(self) -> int:
         return (self.max_speak_idx - self.current_speak_idx) // 2 + 1  # 남은 횟수는 인덱스 + 1
 
-    def interrupt(self, message: str) -> str:
+    def moderator_interrupt(self, message: str) -> str:
         if len(message) == 0:
             message = self.moderator.interrupt(self.topic, self.chat_history)
         self.chat_history.append(AIMessage(content=message, id=""))
         return message
 
-    def analyze(self) -> tuple[DebateScore, float, DebateScore, float]:
+    def score_calculate(self) -> tuple[DebateScore, float, DebateScore, float]:
         scores = self.moderator.analyze(self.topic, self.chat_history)
 
         pro_scores = scores[self.pro.id]
