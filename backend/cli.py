@@ -58,8 +58,6 @@ def main():
     print()
 
     # 2) 토론 진행
-    debate.prepare()
-
     while not debate.finished():
         input()
         speaker_idx, emotion, message = debate.listen()
