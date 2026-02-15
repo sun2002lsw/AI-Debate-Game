@@ -15,9 +15,8 @@ def main():
     print(f"{COLORS[2]}[{topic}]를 주제로 토론{RESET}")
 
     llm = create_llm("gemini-2.5-pro")
-    pro = Character(id=0, persona=Persona("philosopher"), llm=llm)
-    con = Character(id=1, persona=Persona("crybaby"), llm=llm)
-    print(f"{COLORS[2]}페르소나 구성 완료{RESET}")
+    pro = Character(id=0, is_pro=True, persona=Persona("philosopher"), llm=llm)
+    con = Character(id=1, is_pro=False, persona=Persona("crybaby"), llm=llm)
 
     debate = Debate(topic=topic, pro=pro, con=con, max_rounds=2)
 

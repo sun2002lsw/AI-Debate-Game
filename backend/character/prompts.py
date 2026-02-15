@@ -1,23 +1,53 @@
 from persona import Persona
 
 
-def get_system_prompt(topic: str, persona: Persona) -> str:
+def _intro() -> str:
+    return "당신은 현재 토론에 참가한 참가자입니다. 토론에서 승리하기 위해 최선을 다하십시오."
+
+
+def _topic(topic: str) -> str:
+    return f"## 토론 주제\n[{topic}]"
+
+
+def _stance(is_pro: bool) -> str:
+    stance = "찬성" if is_pro else "반대"
+    return f"## 당신의 토론 입장\n당신은 이 주제에 대해 **{stance}** 입장입니다. 반드시 이 입장을 일관되게 유지하세요."
+
+
+def _persona(persona: Persona) -> str:
     return (
-        f"당신은 현재 토론에 참가한 참가자입니다. 토론에서 승리하기 위해 최선을 다하십시오.\n\n"
-        f"## 토론 주제\n"
-        f"[{topic}]\n\n"
         f"## 당신의 정체성 (페르소나)\n"
         f"- 이름: {persona.name}\n"
         f"- 나이: {persona.age}\n"
-        f"- 요약: {persona.summary}\n\n"
-        f"## 토론 전략\n"
-        f"{persona.strategy}\n\n"
-        f"## 반드시 지켜야 할 발언 규칙\n"
-        f"- 발언은 반드시 500자 이하로 작성하세요.\n"
-        f"- 이모지 금지. (예: 😀, 👍 등 절대 사용 금지)\n"
-        f"- 행동 묘사 금지. (예: (웃으며), *주먹을 쥐고* 등 금지)\n"
-        f"- 텍스트에는 오직 당신의 '말'만 포함하세요."
+        f"- 요약: {persona.summary}"
     )
+
+
+def _strategy(persona: Persona) -> str:
+    return f"## 토론 전략\n{persona.strategy}"
+
+
+def _rules() -> str:
+    return (
+        "## 반드시 지켜야 할 발언 규칙\n"
+        "- 발언은 반드시 500자 이하로 작성하세요.\n"
+        "- 이모지 금지. (예: 😀, 👍 등 절대 사용 금지)\n"
+        "- 행동 묘사 금지. (예: (웃으며), *주먹을 쥐고* 등 금지)\n"
+        "- 텍스트에는 오직 당신의 '말'만 포함하세요."
+    )
+
+
+def get_system_prompt(topic: str, is_pro: bool, persona: Persona) -> str:
+    sections = [
+        _intro(),
+        _topic(topic),
+        _stance(is_pro),
+        _persona(persona),
+        _strategy(persona),
+        _rules(),
+    ]
+
+    return "\n\n".join(sections)
 
 
 def get_first_prompt() -> str:

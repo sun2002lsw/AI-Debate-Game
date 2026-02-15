@@ -16,15 +16,16 @@ from .schemas import FirstAnnounceDecision, SpeakResponse
 
 
 class Character:
-    def __init__(self, id: int, persona: Persona, llm: BaseChatModel):
+    def __init__(self, id: int, is_pro: bool, persona: Persona, llm: BaseChatModel):
         self.name = "-".join([persona.name, str(id)])
+        self.is_pro = is_pro
         self.persona = persona
         self.llm = llm
 
     def want_first_announce(self, topic: str) -> tuple[bool, str]:
         messages: list[BaseMessage] = []
 
-        system_prompt = get_system_prompt(topic, self.persona)
+        system_prompt = get_system_prompt(topic, self.is_pro, self.persona)
         messages.append(SystemMessage(content=system_prompt))
 
         first_prompt = get_first_prompt()
@@ -39,7 +40,7 @@ class Character:
     def speak(self, topic: str, chat_history: list[BaseMessage], remain_cnt: int) -> SpeakResponse:
         messages: list[BaseMessage] = []
 
-        system_prompt = get_system_prompt(topic, self.persona)
+        system_prompt = get_system_prompt(topic, self.is_pro, self.persona)
         messages.append(SystemMessage(content=system_prompt))
 
         formatted_chat_history = self._format_chat_history(chat_history)
