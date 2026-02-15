@@ -10,14 +10,9 @@ from llm.factory import create_llm
 from .debater import Debater
 
 
-def create_debater(
-    topic: str,
-    is_pro: bool,
-    persona: str | int,
-    model: str | int,
-) -> Debater:
+def create_debater(persona: str | int, model: str | int) -> Debater:
     debater_id = uuid.uuid4().hex[:8]
     persona_obj = create_persona(persona)
     llm = create_llm(model)
 
-    return Debater(id=debater_id, topic=topic, is_pro=is_pro, persona=persona_obj, llm=llm)
+    return Debater(id=debater_id, persona=persona_obj, llm=llm)

@@ -15,17 +15,15 @@ warnings.filterwarnings(
 
 
 class Debater:
-    def __init__(self, id: str, topic: str, is_pro: bool, persona: Persona, llm: BaseChatModel):
+    def __init__(self, id: str, persona: Persona, llm: BaseChatModel):
         self.name = f"{persona.name}-{id}"
-        self.topic = topic
-        self.is_pro = is_pro
         self.persona = persona
         self.llm = llm
 
-    def want_first(self) -> tuple[bool, str]:
+    def want_first(self, topic: str, is_pro: bool) -> tuple[bool, str]:
         messages: list[BaseMessage] = []
 
-        system_prompt = prompts.get_system_prompt(self.topic, self.is_pro, self.persona)
+        system_prompt = prompts.get_system_prompt(topic, is_pro, self.persona)
         messages.append(SystemMessage(content=system_prompt))
 
         first_prompt = prompts.decide_first_prompt()
@@ -37,10 +35,10 @@ class Debater:
         result: schemas.FirstSpeakDecision = response  # type: ignore[assignment]
         return result.want_first, result.reason
 
-    def first_speak(self) -> schemas.SpeakResponse:
+    def first_speak(self, topic: str, is_pro: bool) -> schemas.SpeakResponse:
         messages: list[BaseMessage] = []
 
-        system_prompt = prompts.get_system_prompt(self.topic, self.is_pro, self.persona)
+        system_prompt = prompts.get_system_prompt(topic, is_pro, self.persona)
         messages.append(SystemMessage(content=system_prompt))
 
         first_speak_prompt = prompts.get_first_speak_prompt()
@@ -52,10 +50,12 @@ class Debater:
         result: schemas.SpeakResponse = response  # type: ignore[assignment]
         return result
 
-    def next_speak(self, chat_history: list[BaseMessage], remain_cnt: int) -> schemas.SpeakResponse:
+    def next_speak(
+        self, topic: str, is_pro: bool, chat_history: list[BaseMessage], remain_cnt: int
+    ) -> schemas.SpeakResponse:
         messages: list[BaseMessage] = []
 
-        system_prompt = prompts.get_system_prompt(self.topic, self.is_pro, self.persona)
+        system_prompt = prompts.get_system_prompt(topic, is_pro, self.persona)
         messages.append(SystemMessage(content=system_prompt))
 
         formatted_chat_history = self._format_chat_history(chat_history)

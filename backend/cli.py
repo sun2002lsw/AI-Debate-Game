@@ -31,8 +31,8 @@ def main():
     print()
 
     # 토론 참가자 생성
-    pro = create_debater(topic=topic, is_pro=True, persona=pro_perso, model=pro_model)
-    con = create_debater(topic=topic, is_pro=False, persona=con_perso, model=con_model)
+    pro = create_debater(persona=pro_perso, model=pro_model)
+    con = create_debater(persona=con_perso, model=con_model)
 
     debate = Debate(topic=topic, speak_cnt=speak_cnt, pro=pro, con=con)
 
