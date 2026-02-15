@@ -1,5 +1,3 @@
-import warnings
-
 from dotenv import load_dotenv
 
 from character import Character
@@ -8,23 +6,18 @@ from debate import Debate
 from llm.factory import create_llm
 
 
-warnings.filterwarnings(
-    "ignore",
-    message="Pydantic serializer warnings",
-    category=UserWarning,
-    module="pydantic",
-)
-
 COLORS = ["\033[94m", "\033[91m", "\033[93m"]  # 찬성=파랑, 반대=빨강, 사회=노랑
 RESET = "\033[0m"
 
 
 def main():
     topic = "스타2에서 프로토스의 점멸추적자 빌드를 테란이 막을 때, 본진 벙커 없이 막아야 한다"
+    print(f"{COLORS[2]}[{topic}]를 주제로 토론{RESET}")
 
     llm = create_llm("gemini-2.5-pro")
     pro = Character(id=0, persona=Persona("philosopher"), llm=llm)
     con = Character(id=1, persona=Persona("crybaby"), llm=llm)
+    print(f"{COLORS[2]}페르소나 구성 완료{RESET}")
 
     debate = Debate(topic=topic, pro=pro, con=con, max_rounds=2)
 

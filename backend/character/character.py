@@ -1,7 +1,16 @@
+import warnings
+
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage
 
 from persona import Persona
+
+warnings.filterwarnings(
+    "ignore",
+    message="Pydantic serializer warnings",
+    category=UserWarning,
+    module="pydantic",
+)
 from .prompts import get_system_prompt, get_first_prompt, get_speak_prompt
 from .schemas import FirstAnnounceDecision, SpeakResponse
 
