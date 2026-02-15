@@ -7,15 +7,17 @@ backend/
   requirements.txt     # Python 의존성 (fastapi, uvicorn, langchain-* 등)
   character/           # 캐릭터 모듈 — LLM과 상호작용하는 토론 참가자
     character.py       #   Character 클래스 (structured output으로 발언 생성)
+    factory.py         #   create_character() 팩토리 — 문자열/인덱스로 Character 생성
     schemas.py         #   Pydantic 모델 (Emotion, SpeakResponse, FirstAnnounceDecision)
     prompts.py         #   시스템/사용자 프롬프트 템플릿
   debate/              # 토론 모듈 — 토론 진행 및 상태 관리
     debate.py          #   Debate 클래스 (라운드, 턴, 히스토리 관리)
   persona/             # 페르소나 모듈 — 캐릭터 성격 정의
-    persona.py         #   Persona 로더 (info.txt + strategy.txt 파싱)
+    persona.py         #   Persona 클래스 (info.txt + strategy.txt 파싱)
+    factory.py         #   create_persona() 팩토리 + list_personas()
     personas/          #   페르소나 데이터 (philosopher, crybaby, psycho, thug)
   llm/                 # LLM 모듈 — 다중 프로바이더 지원
-    factory.py         #   create_llm() — 모델명으로 OpenAI/Anthropic/Google 자동 선택
+    factory.py         #   create_llm() 팩토리 + list_models(), resolve_model()
 frontend/
   src/App.jsx          # React 앱 (Vite, localhost:5173)
 .claude/
