@@ -1,8 +1,6 @@
-import re
-
 from pydantic import BaseModel, Field, field_validator
 
-_EMOJI_PATTERN = re.compile(r"[\U00010000-\U0010FFFF]")
+from common.schemas import strip_emoji as _strip_emoji
 
 
 class ScoreElement(BaseModel):
@@ -37,7 +35,7 @@ class InterruptResponse(BaseModel):
     @field_validator("message")
     @classmethod
     def strip_emoji(cls, v: str) -> str:
-        return _EMOJI_PATTERN.sub("", v)
+        return _strip_emoji(v)
 
 
 class AnalyzeResponse(BaseModel):

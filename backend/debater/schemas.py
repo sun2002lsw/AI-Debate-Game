@@ -1,9 +1,8 @@
-import re
 from enum import Enum
 
 from pydantic import BaseModel, Field, field_validator
 
-_EMOJI_PATTERN = re.compile(r"[\U00010000-\U0010FFFF]")
+from common.schemas import strip_emoji as _strip_emoji
 
 
 class Emotion(str, Enum):
@@ -31,4 +30,4 @@ class SpeakResponse(BaseModel):
     @field_validator("message")
     @classmethod
     def strip_emoji(cls, v: str) -> str:
-        return _EMOJI_PATTERN.sub("", v)
+        return _strip_emoji(v)

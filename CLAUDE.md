@@ -5,6 +5,10 @@ backend/
   main.py              # FastAPI 서버 진입점 (uvicorn)
   cli.py               # CLI 기반 내부 테스트용 실행 스크립트
   requirements.txt     # Python 의존성 (fastapi, uvicorn, langchain-* 등)
+  common/              # 공통 모듈 — debater·moderator 공유 유틸리티
+    warnings.py        #   configure() — Pydantic 경고 필터
+    schemas.py         #   EMOJI_PATTERN, strip_emoji()
+    prompts.py         #   topic(), rules(), chat_history_section()
   debater/             # 토론 참가자 모듈 — LLM과 상호작용하는 토론 참가자
     debater.py         #   Debater 클래스 (structured output으로 발언 생성)
     factory.py         #   create_debater() 팩토리 — 문자열/인덱스로 Debater 생성
@@ -51,6 +55,7 @@ frontend/
 - 모듈의 공개 API를 전부(또는 대부분) 가져올 때는 `from . import module` 방식을 사용하고, `module.name`으로 접근
 - 1~2개만 가져올 때는 `from module import name` 방식 허용
 - `__init__.py`의 re-export는 `from .module import name` 방식 유지
+- `__init__.py`에는 re-export만 작성할 것 — 로직, 설정, 부수효과 코드를 넣지 않기
 
 ### 파일 포맷
 - 모든 파일은 POSIX 규칙에 따라 마지막에 반드시 빈 줄(trailing newline)을 포함할 것

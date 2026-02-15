@@ -1,5 +1,6 @@
 from dotenv import load_dotenv
 
+from common.warnings import configure as configure_warnings
 from debater import create_debater
 from persona import list_personas
 from llm import list_models
@@ -59,4 +60,5 @@ def main():
 
 if __name__ == "__main__":
     load_dotenv()
+    configure_warnings()
     main()

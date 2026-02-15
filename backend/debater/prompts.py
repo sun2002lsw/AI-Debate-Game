@@ -1,12 +1,9 @@
+from common import prompts as common_prompts
 from persona import Persona
 
 
 def _intro() -> str:
     return "당신은 현재 토론에 참가한 참가자입니다. 토론에서 승리하기 위해 최선을 다하십시오."
-
-
-def _topic(topic: str) -> str:
-    return f"## 토론 주제\n[{topic}]"
 
 
 def _stance(is_pro: bool) -> str:
@@ -27,24 +24,14 @@ def _strategy(persona: Persona) -> str:
     return f"## 토론 전략\n{persona.strategy}"
 
 
-def _rules() -> str:
-    return (
-        "## 반드시 지켜야 할 발언 규칙\n"
-        "- 발언은 반드시 500자 이하로 작성하세요.\n"
-        "- 이모지 금지. (예: 😀, 👍 등 절대 사용 금지)\n"
-        "- 행동 묘사 금지. (예: (웃으며), *주먹을 쥐고* 등 금지)\n"
-        "- 텍스트에는 오직 당신의 '말'만 포함하세요."
-    )
-
-
 def get_system_prompt(topic: str, is_pro: bool, persona: Persona) -> str:
     sections = [
         _intro(),
-        _topic(topic),
+        common_prompts.topic(topic),
         _stance(is_pro),
         _persona(persona),
         _strategy(persona),
-        _rules(),
+        common_prompts.rules(),
     ]
 
     return "\n\n".join(sections)
@@ -71,9 +58,7 @@ def get_next_speak_prompt(chat_history: str, remain: int) -> str:
     last_speak = "이것은 당신의 '최후 발언'입니다. 모든 논리를 쏟아부어 마무리하세요."
 
     return (
-        f"## 지금까지의 대화\n"
-        f"{chat_history}\n\n"
-        f"--- \n"
+        f"{common_prompts.chat_history_section(chat_history)}"
         f"이제 당신이 발언할 차례입니다. 위 대화 맥락을 바탕으로 발언해 주세요.\n"
         f"남은 발언 횟수는 {remain}회입니다. 발언에 참고하세요.\n"
         f"{normal_speak if remain > 1 else last_speak}"

@@ -1,16 +1,7 @@
-import warnings
-
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage
 
 from . import prompts, schemas
-
-warnings.filterwarnings(
-    "ignore",
-    message="Pydantic serializer warnings",
-    category=UserWarning,
-    module="pydantic",
-)
 
 
 class Moderator:
