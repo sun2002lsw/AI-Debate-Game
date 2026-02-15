@@ -2,14 +2,6 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Clear Terminal",
-      "type": "shell",
-      "command": "cls",
-      "presentation": {
-        "clear": true
-      }
-    },
-    {
       "label": "Start Frontend Dev",
       "type": "npm",
       "script": "dev",

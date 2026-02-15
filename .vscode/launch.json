@@ -9,8 +9,7 @@
       "cwd": "${workspaceFolder}/backend",
       "python": "${workspaceFolder}/.venv/Scripts/python.exe",
       "console": "integratedTerminal",
-      "envFile": "${workspaceFolder}/.env",
-      "preLaunchTask": "Clear Terminal"
+      "envFile": "${workspaceFolder}/.env"
     },
     {
       "name": "FastAPI Debug",

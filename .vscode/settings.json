@@ -1,4 +1,5 @@
 {
+  "debug.terminal.clearBeforeReusing": true,
   "files.exclude": {
     "**/__pycache__": true,
     "**/.venv": true
