@@ -1,9 +1,9 @@
 from dotenv import load_dotenv
 
-from character import Character
-from persona import Persona
+from character import create_character
+from persona import list_personas
+from llm import list_models
 from debate import Debate
-from llm.factory import create_llm
 
 
 COLORS = ["\033[94m", "\033[91m", "\033[93m"]  # 찬성=파랑, 반대=빨강, 사회=노랑
@@ -11,12 +11,27 @@ RESET = "\033[0m"
 
 
 def main():
-    topic = "스타2에서 프로토스의 점멸추적자 빌드를 테란이 막을 때, 본진 벙커 없이 막아야 한다"
-    print(f"{COLORS[2]}[{topic}]를 주제로 토론{RESET}")
+    topic = input("토론 주제: ")
 
-    llm = create_llm("gemini-2.5-pro")
-    pro = Character(id=0, is_pro=True, persona=Persona("philosopher"), llm=llm)
-    con = Character(id=1, is_pro=False, persona=Persona("crybaby"), llm=llm)
+    print("\n===== 페르소나 목록 =====")
+    personas = list_personas()
+    for i, p in enumerate(personas):
+        print(f"  {i}: {p.name}({p.age}세) - {p.summary}")
+    print("\n===== LLM 모델 목록 =====")
+    models = list_models()
+    for i, m in enumerate(models):
+        print(f"  {i}: {m}")
+    print()
+
+    pro_perso = int(input("찬성측 인격 선택: "))
+    pro_model = int(input("찬성측 모델 선택: "))
+    con_perso = int(input("반대측 인격 선택: "))
+    con_model = int(input("반대측 모델 선택: "))
+    print()
+
+    # 캐릭터 생성
+    pro = create_character(is_pro=True, persona=pro_perso, model=pro_model)
+    con = create_character(is_pro=False, persona=con_perso, model=con_model)
 
     debate = Debate(topic=topic, pro=pro, con=con, max_rounds=2)
 
@@ -25,6 +40,7 @@ def main():
     pro_choice = "선공 희망" if pro_want_first else "후공 희망"
     con_choice = "선공 희망" if con_want_first else "후공 희망"
 
+    print(f"{COLORS[2]}이 먼저 발언합니다.{RESET}")
     print(f"{COLORS[0]}찬성측: {pro_choice} - {pro_reason}{RESET}")
     print(f"{COLORS[1]}반대측: {con_choice} - {con_reason}{RESET}")
     print(f"{COLORS[2]}→ {"반대측" if first_idx else "찬성측"}이 먼저 발언합니다.{RESET}")
@@ -37,7 +53,7 @@ def main():
         print(f"{COLORS[speaker_idx]}{speaker}: ({emotion}) {message}{RESET}")
 
     # 3) 종료
-    print(f"{COLORS[2]}{debate.close()}{RESET}")
+    print(f"\n{COLORS[2]}{debate.close()}{RESET}")
 
 
 if __name__ == "__main__":
