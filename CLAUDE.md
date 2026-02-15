@@ -40,3 +40,6 @@ frontend/
 ### Windows 인코딩
 - Windows의 Python 기본 인코딩은 cp949이므로, 한글이 포함된 파일을 `open()`할 때 반드시 `encoding='utf-8'`을 지정할 것
 - Bash에서 Python 코드를 인라인 실행(`python -c`)할 때도 동일하게 주의
+
+### 파일 포맷
+- 모든 파일은 POSIX 규칙에 따라 마지막에 반드시 빈 줄(trailing newline)을 포함할 것
