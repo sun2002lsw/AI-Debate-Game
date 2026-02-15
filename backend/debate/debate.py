@@ -1,13 +1,14 @@
 import random
 
-from langchain_core.messages import BaseMessage, AIMessage, HumanMessage
+from langchain_core.messages import BaseMessage, AIMessage
 
 from character import Character
 
 
 class Debate:
-    def __init__(self, topic: str, pro: Character, con: Character, debate_round: int):
+    def __init__(self, topic: str, speak_cnt: int, pro: Character, con: Character):
         self.topic = topic
+        self.max_speak_idx = speak_cnt * 2 - 1  # 다들 각자 한번씩 말해야 하니깐
 
         self.pro = pro
         self.con = con
@@ -15,7 +16,6 @@ class Debate:
 
         self.start_speak_idx = 0
         self.current_speak_idx = 0
-        self.max_speak_idx = debate_round * 2 - 1  # 다들 각자 한번씩 말해야 하니깐
 
         self.chat_history: list[BaseMessage] = []
 

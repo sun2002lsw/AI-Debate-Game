@@ -11,8 +11,8 @@ RESET = "\033[0m"
 
 
 def main():
-    debate_topic = input("토론 주제: ")
-    debate_round = int(input("토론 횟수: "))
+    topic = input("토론 주제: ")
+    speak_cnt = int(input("발언 횟수: "))
 
     print("\n===== 페르소나 목록 =====")
     personas = list_personas()
@@ -31,10 +31,10 @@ def main():
     print()
 
     # 캐릭터 생성
-    pro = create_character(topic=debate_topic, is_pro=True, persona=pro_perso, model=pro_model)
-    con = create_character(topic=debate_topic, is_pro=False, persona=con_perso, model=con_model)
+    pro = create_character(topic=topic, is_pro=True, persona=pro_perso, model=pro_model)
+    con = create_character(topic=topic, is_pro=False, persona=con_perso, model=con_model)
 
-    debate = Debate(topic=debate_topic, pro=pro, con=con, debate_round=debate_round)
+    debate = Debate(topic=topic, speak_cnt=speak_cnt, pro=pro, con=con)
 
     # 1) 선공 결정
     pro_want_first, pro_reason, con_want_first, con_reason, first_idx = debate.pick_first()
