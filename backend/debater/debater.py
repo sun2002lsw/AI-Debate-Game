@@ -14,7 +14,7 @@ warnings.filterwarnings(
 )
 
 
-class Character:
+class Debater:
     def __init__(self, id: str, topic: str, is_pro: bool, persona: Persona, llm: BaseChatModel):
         self.name = f"{persona.name}-{id}"
         self.topic = topic

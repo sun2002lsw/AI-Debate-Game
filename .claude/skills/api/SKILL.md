@@ -13,17 +13,17 @@ description: FastAPI 엔드포인트를 RESTful 설계 원칙에 따라 추가
 
 사용자의 요청을 분석하여 아래 항목을 정리합니다:
 
-- **리소스 이름**: REST 리소스 식별 (예: debates, characters, personas)
+- **리소스 이름**: REST 리소스 식별 (예: debates, debaters, personas)
 - **필요한 동작**: CRUD 중 어떤 동작이 필요한지 결정
 - **데이터 구조**: 요청/응답에 필요한 필드와 타입 파악
-- **관련 모듈**: `backend/` 내 기존 모듈 중 활용할 것 확인 (character, debate, persona, llm)
+- **관련 모듈**: `backend/` 내 기존 모듈 중 활용할 것 확인 (debater, debate, persona, llm)
 
 ### 2단계: API 설계
 
 RESTful 원칙에 따라 엔드포인트를 설계합니다:
 
 #### URL 규칙
-- 리소스명은 복수형 명사 사용: `/debates`, `/characters`
+- 리소스명은 복수형 명사 사용: `/debates`, `/debaters`
 - 계층 관계 표현: `/debates/{debate_id}/messages`
 - 동작은 HTTP 메서드로 구분 (GET/POST/PUT/DELETE)
 
@@ -40,7 +40,7 @@ RESTful 원칙에 따라 엔드포인트를 설계합니다:
 
 `backend/` 내에 스키마 파일을 작성합니다. 기존 패턴을 참고합니다:
 
-- 기존 예시: `backend/character/schemas.py` (Emotion, FirstAnnounceDecision, SpeakResponse)
+- 기존 예시: `backend/debater/schemas.py` (Emotion, FirstAnnounceDecision, SpeakResponse)
 - 요청 스키마: `XxxRequest(BaseModel)` — 클라이언트가 보내는 데이터
 - 응답 스키마: `XxxResponse(BaseModel)` — 서버가 반환하는 데이터
 - 모든 필드에 `Field(description="...")` 작성
@@ -70,7 +70,7 @@ async def create_debate(request: DebateRequest):
 - 엔드포인트 함수명은 동작을 명확히 표현: `create_debate`, `get_debate`, `list_debates`
 - `response_model`을 항상 지정하여 응답 형태를 명시
 - 성공 상태 코드를 명시: 생성=201, 조회=200, 삭제=204
-- 비즈니스 로직은 기존 도메인 모듈(debate, character 등)에 위임
+- 비즈니스 로직은 기존 도메인 모듈(debate, debater 등)에 위임
 
 ### 5단계: 에러 처리
 
@@ -137,6 +137,6 @@ AskUserQuestion 도구를 사용하여 사용자에게 승인을 요청합니다
 
 - 기존 `backend/main.py`의 CORS 설정과 앱 구조를 유지합니다
 - 도메인 로직은 엔드포인트에 직접 작성하지 않고 기존 모듈에 위임합니다
-- 모든 임포트는 기존 패턴을 따릅니다 (상대 임포트: `from character import Character`)
+- 모든 임포트는 기존 패턴을 따릅니다 (상대 임포트: `from debater import Debater`)
 - `.env` 파일의 API 키 등 민감 정보는 응답에 포함하지 않습니다
 - 스키마 필드 설명은 한글로 작성합니다

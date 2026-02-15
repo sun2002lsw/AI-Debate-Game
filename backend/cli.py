@@ -1,6 +1,6 @@
 from dotenv import load_dotenv
 
-from character import create_character
+from debater import create_debater
 from persona import list_personas
 from llm import list_models
 from debate import Debate
@@ -30,9 +30,9 @@ def main():
     con_model = int(input("반대측 모델 선택: "))
     print()
 
-    # 캐릭터 생성
-    pro = create_character(topic=topic, is_pro=True, persona=pro_perso, model=pro_model)
-    con = create_character(topic=topic, is_pro=False, persona=con_perso, model=con_model)
+    # 토론 참가자 생성
+    pro = create_debater(topic=topic, is_pro=True, persona=pro_perso, model=pro_model)
+    con = create_debater(topic=topic, is_pro=False, persona=con_perso, model=con_model)
 
     debate = Debate(topic=topic, speak_cnt=speak_cnt, pro=pro, con=con)
 
