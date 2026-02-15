@@ -50,7 +50,7 @@ def get_system_prompt(topic: str, is_pro: bool, persona: Persona) -> str:
     return "\n\n".join(sections)
 
 
-def get_first_prompt() -> str:
+def decide_first_prompt() -> str:
     return (
         f"토론을 시작하기 전 전략적 선택이 필요합니다.\n"
         f"먼저 발언하여 프레임을 주도할지, 나중에 발언하여 상대의 허점을 찌를지 결정하세요.\n"
@@ -58,7 +58,15 @@ def get_first_prompt() -> str:
     )
 
 
-def get_speak_prompt(chat_history: str, remain: int) -> str:
+def get_first_speak_prompt() -> str:
+    return (
+        "토론의 첫 발언자로 선정되었습니다.\n"
+        "첫 발언은 토론의 흐름을 결정합니다. "
+        "강력한 첫마디로 주도권을 잡고, 상대방이 당신의 프레임 안에서 반응하게 만드세요."
+    )
+
+
+def get_next_speak_prompt(chat_history: str, remain: int) -> str:
     normal_speak = "상대방의 논리를 반박하거나 당신의 주장을 이어가세요."
     last_speak = "이것은 당신의 '최후 발언'입니다. 모든 논리를 쏟아부어 마무리하세요."
 

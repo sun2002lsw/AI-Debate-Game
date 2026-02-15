@@ -12,6 +12,7 @@ from .character import Character
 
 def create_character(
     *,
+    topic: str,
     is_pro: bool,
     persona: str | int,
     model: str | int,
@@ -23,4 +24,4 @@ def create_character(
     model_name = resolve_model(model)
     llm = create_llm(model_name)
 
-    return Character(id=character_id, is_pro=is_pro, persona=persona_obj, llm=llm)
+    return Character(id=character_id, topic=topic, is_pro=is_pro, persona=persona_obj, llm=llm)

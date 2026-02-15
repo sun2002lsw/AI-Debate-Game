@@ -4,8 +4,7 @@ from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage
 
 from persona import Persona
-from .prompts import get_system_prompt, get_first_prompt, get_speak_prompt
-from .schemas import FirstAnnounceDecision, SpeakResponse
+from . import prompts, schemas
 
 warnings.filterwarnings(
     "ignore",
@@ -16,41 +15,57 @@ warnings.filterwarnings(
 
 
 class Character:
-    def __init__(self, id: str, is_pro: bool, persona: Persona, llm: BaseChatModel):
+    def __init__(self, id: str, topic: str, is_pro: bool, persona: Persona, llm: BaseChatModel):
         self.name = f"{persona.name}-{id}"
+        self.topic = topic
         self.is_pro = is_pro
         self.persona = persona
         self.llm = llm
 
-    def want_first_announce(self, topic: str) -> tuple[bool, str]:
+    def want_first(self) -> tuple[bool, str]:
         messages: list[BaseMessage] = []
 
-        system_prompt = get_system_prompt(topic, self.is_pro, self.persona)
+        system_prompt = prompts.get_system_prompt(self.topic, self.is_pro, self.persona)
         messages.append(SystemMessage(content=system_prompt))
 
-        first_prompt = get_first_prompt()
+        first_prompt = prompts.decide_first_prompt()
         messages.append(HumanMessage(content=first_prompt))
 
-        structured_llm = self.llm.with_structured_output(FirstAnnounceDecision)
+        structured_llm = self.llm.with_structured_output(schemas.FirstSpeakDecision)
         response = structured_llm.invoke(messages)
 
-        result: FirstAnnounceDecision = response  # type: ignore[assignment]
+        result: schemas.FirstSpeakDecision = response  # type: ignore[assignment]
         return result.want_first, result.reason
 
-    def speak(self, topic: str, chat_history: list[BaseMessage], remain_cnt: int) -> SpeakResponse:
+    def first_speak(self) -> schemas.SpeakResponse:
         messages: list[BaseMessage] = []
 
-        system_prompt = get_system_prompt(topic, self.is_pro, self.persona)
+        system_prompt = prompts.get_system_prompt(self.topic, self.is_pro, self.persona)
+        messages.append(SystemMessage(content=system_prompt))
+
+        first_speak_prompt = prompts.get_first_speak_prompt()
+        messages.append(HumanMessage(content=first_speak_prompt))
+
+        structured_llm = self.llm.with_structured_output(schemas.SpeakResponse)
+        response = structured_llm.invoke(messages)
+
+        result: schemas.SpeakResponse = response  # type: ignore[assignment]
+        return result
+
+    def next_speak(self, chat_history: list[BaseMessage], remain_cnt: int) -> schemas.SpeakResponse:
+        messages: list[BaseMessage] = []
+
+        system_prompt = prompts.get_system_prompt(self.topic, self.is_pro, self.persona)
         messages.append(SystemMessage(content=system_prompt))
 
         formatted_chat_history = self._format_chat_history(chat_history)
-        speak_prompt = get_speak_prompt(formatted_chat_history, remain_cnt)
-        messages.append(HumanMessage(content=speak_prompt))
+        next_speak_prompt = prompts.get_next_speak_prompt(formatted_chat_history, remain_cnt)
+        messages.append(HumanMessage(content=next_speak_prompt))
 
-        structured_llm = self.llm.with_structured_output(SpeakResponse)
+        structured_llm = self.llm.with_structured_output(schemas.SpeakResponse)
         response = structured_llm.invoke(messages)
 
-        result: SpeakResponse = response  # type: ignore[assignment]
+        result: schemas.SpeakResponse = response  # type: ignore[assignment]
         return result
 
     def _format_chat_history(self, chat_history: list[BaseMessage]) -> str:
