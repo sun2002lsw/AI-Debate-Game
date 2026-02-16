@@ -37,7 +37,6 @@ class Debate:
         self._first_speak_result: FirstSpeakResult | None = None
         self._last_speak: queue.Queue[Chat] = queue.Queue(maxsize=1)
         self._speak_consumed = threading.Event()
-        self._speak_consumed.set()  # 첫 발언은 바로 시작 가능
         self._debate_result: DebateResult | None = None
 
         self.pro = pro
@@ -50,7 +49,6 @@ class Debate:
         self.chat_history: list[Chat] = []
 
     def start(self):
-        """선공 결정 → 발언 루프 → 채점 (백그라운드 스레드에서 실행)"""
         threading.Thread(target=self._run, daemon=True).start()
 
     def _run(self):
@@ -60,14 +58,13 @@ class Debate:
         self.first_speak_decided_noti()
 
         while self.current_speak_idx <= self.max_speak_idx:
-            self._speak_consumed.wait()
-            self._speak_consumed.clear()
-
             speaker_idx, chat = self._speak()
             self._last_speak.put(chat)
             self.speak_ready_noti(speaker_idx)
-
             self.current_speak_idx += 1
+
+            self._speak_consumed.wait()
+            self._speak_consumed.clear()
 
         self.debate_result_calculating_noti()
         self._debate_result = self._calculate_debate_result()
@@ -116,6 +113,7 @@ class Debate:
         return speaker_idx, chat
 
     def _calculate_debate_result(self) -> DebateResult:
+        """토론 결과 점수 계산"""
         scores = self.moderator.analyze(self.topic, self.chat_history)
 
         result = DebateResult(

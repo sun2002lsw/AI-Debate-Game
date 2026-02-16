@@ -67,11 +67,7 @@ def print_speak(speaker_idx: int, emotion: str, message: str):
 
 
 def print_debate_ended(topic: str):
-    print(f"\n{_COLORS[2]}[{topic}] 주제에 대한 토론이 종료되었습니다.{_RESET}")
-
-
-def print_scoring():
-    print(f"{_COLORS[2]}토론에 대한 평가를 시작합니다.{_RESET}")
+    print(f"\n{_COLORS[2]}[{topic}] 주제에 대한 토론이 종료되었습니다. 토론에 대한 평가를 시작합니다.{_RESET}")
 
 
 def print_debate_result(result: DebateResult):

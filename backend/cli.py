@@ -28,15 +28,11 @@ def main():
     debate_result_calculating = threading.Event()
     debate_result_calculated = threading.Event()
 
-    debate_view_complete1 = threading.Event()
-    debate_view_complete2 = threading.Event()
-
     def first_speak_deciding_noti():
         print_deciding_first()
 
     def first_speak_decided_noti():
         first_speak_decided.set()
-
         result = debate.first_speak_result()
         assert result is not None
         print_first_speak(result)
@@ -46,16 +42,10 @@ def main():
 
     def debate_result_calculating_noti():
         debate_result_calculating.set()
-
-        debate_view_complete1.wait()
         print_debate_ended(topic)
-        print_scoring()
-        debate_view_complete2.set()
 
     def debate_result_calculated_noti():
         debate_result_calculated.set()
-
-        debate_view_complete2.wait()
         result = debate.debate_result()
         assert result is not None
         print_debate_result(result)
@@ -85,8 +75,6 @@ def main():
         chat = debate.listen()
         if chat:
             print_speak(chat.speaker_idx, chat.emotion, chat.message)
-
-    debate_view_complete1.set()
 
     # 3) 채점 완료 대기
     debate_result_calculated.wait()
