@@ -23,11 +23,11 @@ def main():
     moderator = Moderator(llm=create_llm(mod_model))
 
     # 토론 처리 알림들
-    first_pick_done = threading.Event()
+    first_speak_done = threading.Event()
     score_done = threading.Event()
 
-    def first_picked_noti():
-        first_pick_done.set()
+    def first_speak_decided_noti():
+        first_speak_done.set()
 
     def speak_ready_noti(speaker_idx: int):
         print_speak_ready(speaker_idx)
@@ -39,7 +39,7 @@ def main():
     debate = Debate(
         topic=topic,
         speak_cnt=speak_cnt,
-        first_picked_noti=first_picked_noti,
+        first_speak_decided_noti=first_speak_decided_noti,
         speak_ready_noti=speak_ready_noti,
         score_calculated_noti=score_calculated_noti,
         moderator=moderator,
@@ -49,11 +49,11 @@ def main():
 
     # 1) 선공 결정 대기
     print_deciding_first()
-    first_pick_done.wait()
+    first_speak_done.wait()
 
-    result = debate.first_pick_result()
+    result = debate.first_speak_result()
     assert result is not None
-    print_first_pick(result)
+    print_first_speak(result)
 
     # 2) 토론 진행
     while not debate.finished():

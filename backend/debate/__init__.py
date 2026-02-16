@@ -1,4 +1,4 @@
 from .debate import Debate
-from .schemas import FirstPickResult, DebateResult
+from .schemas import FirstSpeakResult, DebateResult
 
-__all__ = ["Debate", "FirstPickResult", "DebateResult"]
+__all__ = ["Debate", "FirstSpeakResult", "DebateResult"]

@@ -7,7 +7,7 @@ from langchain_core.messages import BaseMessage, AIMessage
 from debater import Debater
 from debater.schemas import SpeakResponse
 from moderator import Moderator
-from .schemas import FirstPickResult, DebateResult
+from .schemas import FirstSpeakResult, DebateResult
 from .score_calculator import calculate
 
 
@@ -16,7 +16,7 @@ class Debate:
         self,
         topic: str,
         speak_cnt: int,
-        first_picked_noti: Callable[[], None],
+        first_speak_decided_noti: Callable[[], None],
         speak_ready_noti: Callable[[int], None],
         score_calculated_noti: Callable[[], None],
         pro: Debater,
@@ -26,13 +26,13 @@ class Debate:
         self.topic = topic
         self.max_speak_idx = speak_cnt * 2 - 1  # 다들 각자 한번씩 말해야 하니깐
 
-        self.first_picked_noti = first_picked_noti
+        self.first_speak_decided_noti = first_speak_decided_noti
         self.speak_ready_noti = speak_ready_noti
         self.score_calculated_noti = score_calculated_noti
         self._executor = ThreadPoolExecutor(max_workers=1)
         self._future: Future[tuple[int, SpeakResponse]] = Future()
 
-        self._first_pick_result: FirstPickResult | None = None
+        self._first_speak_result: FirstSpeakResult | None = None
         self._debate_result: DebateResult | None = None
 
         self.pro = pro
@@ -44,19 +44,19 @@ class Debate:
         self.current_speak_idx = 0
         self.chat_history: list[BaseMessage] = []
 
-        self._start_pick_first()
+        self._start_decide_first_speak()
 
-    def _start_pick_first(self):
+    def _start_decide_first_speak(self):
         """선공 결정을 백그라운드에서 시작"""
-        future = self._executor.submit(self._pick_first)
+        future = self._executor.submit(self._decide_first_speak)
 
-        def _notify(future: Future[FirstPickResult]):
-            self._first_pick_result = future.result()
-            self.first_picked_noti()
+        def _notify(future: Future[FirstSpeakResult]):
+            self._first_speak_result = future.result()
+            self.first_speak_decided_noti()
 
         future.add_done_callback(_notify)
 
-    def _pick_first(self) -> FirstPickResult:
+    def _decide_first_speak(self) -> FirstSpeakResult:
         """누가 먼저 최초 발언을 할지 결정"""
         pro_want_first, pro_reason = self.pro.want_first(self.topic, True)
         con_want_first, con_reason = self.con.want_first(self.topic, False)
@@ -69,7 +69,7 @@ class Debate:
         # 다음 발언 미리 준비
         self._prepare()
 
-        result = FirstPickResult(
+        result = FirstSpeakResult(
             pro_want_first=pro_want_first,
             pro_reason=pro_reason,
             con_want_first=con_want_first,
@@ -79,8 +79,8 @@ class Debate:
 
         return result
 
-    def first_pick_result(self) -> FirstPickResult | None:
-        return self._first_pick_result
+    def first_speak_result(self) -> FirstSpeakResult | None:
+        return self._first_speak_result
 
     def debate_result(self) -> DebateResult | None:
         return self._debate_result

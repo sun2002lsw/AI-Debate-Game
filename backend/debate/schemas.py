@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from moderator import DebateScore
 
 
-class FirstPickResult(BaseModel):
+class FirstSpeakResult(BaseModel):
     pro_want_first: bool
     pro_reason: str
     con_want_first: bool

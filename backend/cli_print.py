@@ -1,4 +1,4 @@
-from debate.schemas import DebateResult, FirstPickResult
+from debate.schemas import DebateResult, FirstSpeakResult
 from persona import Persona
 
 _COLORS = ["\033[94m", "\033[91m", "\033[93m"]  # 찬성=파랑, 반대=빨강, 사회=노랑
@@ -52,7 +52,7 @@ def print_deciding_first():
     print(f"{_COLORS[2]}선공을 결정하고 있습니다...{_RESET}")
 
 
-def print_first_pick(result: FirstPickResult):
+def print_first_speak(result: FirstSpeakResult):
     pro_choice = "선공 희망" if result.pro_want_first else "후공 희망"
     con_choice = "선공 희망" if result.con_want_first else "후공 희망"
 
