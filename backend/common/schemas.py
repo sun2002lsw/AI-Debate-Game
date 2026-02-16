@@ -25,6 +25,7 @@ class Emotion(str, Enum):
 @dataclass
 class Chat:
     id: str
+    speaker_idx: int  # 0: 찬성측, 1: 반대측
     speaker_id: str  # 빈 문자열이면 사회자 발언
     emotion: str  # 빈 문자열이면 사회자 발언
     message: str

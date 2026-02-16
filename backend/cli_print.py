@@ -56,7 +56,6 @@ def print_first_speak(result: FirstSpeakResult):
     pro_choice = "선공 희망" if result.pro_want_first else "후공 희망"
     con_choice = "선공 희망" if result.con_want_first else "후공 희망"
 
-    print(f"{_COLORS[2]}먼저 발언할 토론자를 선택합니다.{_RESET}")
     print(f"{_COLORS[0]}찬성측: {pro_choice} - {result.pro_reason}{_RESET}")
     print(f"{_COLORS[1]}반대측: {con_choice} - {result.con_reason}{_RESET}")
     print(f"{_COLORS[2]}→ {_SIDE_NAMES[result.first_idx]}이 먼저 발언합니다.{_RESET}")

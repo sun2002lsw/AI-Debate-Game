@@ -23,17 +23,17 @@ def main():
     moderator = Moderator(llm=create_llm(mod_model))
 
     # 토론 처리 알림들
-    first_speak_done = threading.Event()
-    score_done = threading.Event()
+    first_speak_decided = threading.Event()
+    debate_result_calculated = threading.Event()
 
     def first_speak_decided_noti():
-        first_speak_done.set()
+        first_speak_decided.set()
 
     def speak_ready_noti(speaker_idx: int):
         print_speak_ready(speaker_idx)
 
-    def score_calculated_noti():
-        score_done.set()
+    def debate_result_calculated_noti():
+        debate_result_calculated.set()
 
     # 토론 구성
     debate = Debate(
@@ -41,7 +41,7 @@ def main():
         speak_cnt=speak_cnt,
         first_speak_decided_noti=first_speak_decided_noti,
         speak_ready_noti=speak_ready_noti,
-        score_calculated_noti=score_calculated_noti,
+        debate_result_calculated_noti=debate_result_calculated_noti,
         moderator=moderator,
         pro=pro,
         con=con,
@@ -51,22 +51,25 @@ def main():
 
     # 1) 선공 결정 대기
     print_deciding_first()
-    first_speak_done.wait()
+    first_speak_decided.wait()
 
     result = debate.first_speak_result()
     assert result is not None
     print_first_speak(result)
 
     # 2) 토론 진행
-    while not debate.finished():
+    while True:
         input()
-        speaker_idx, emotion, message = debate.listen()
-        print_speak(speaker_idx, emotion, message)
+        chat = debate.listen()
+        if not chat:
+            break
+
+        print_speak(chat.speaker_idx, chat.emotion, chat.message)
 
     # 3) 종료 및 채점 대기
     print_debate_ended(topic)
     print_scoring()
-    score_done.wait()
+    debate_result_calculated.wait()
 
     result = debate.debate_result()
     assert result is not None
