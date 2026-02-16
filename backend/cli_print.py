@@ -59,7 +59,6 @@ def print_first_speak(result: FirstSpeakResult):
     print(f"{_COLORS[0]}찬성측: {pro_choice} - {result.pro_reason}{_RESET}")
     print(f"{_COLORS[1]}반대측: {con_choice} - {result.con_reason}{_RESET}")
     print(f"{_COLORS[2]}→ {_SIDE_NAMES[result.first_idx]}이 먼저 발언합니다.{_RESET}")
-    print()
 
 
 def print_speak(speaker_idx: int, emotion: str, message: str):
@@ -72,7 +71,7 @@ def print_debate_ended(topic: str):
 
 
 def print_scoring():
-    print(f"{_COLORS[2]}채점 중입니다...{_RESET}")
+    print(f"{_COLORS[2]}토론에 대한 평가를 시작합니다.{_RESET}")
 
 
 def print_debate_result(result: DebateResult):
