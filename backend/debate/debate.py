@@ -16,9 +16,10 @@ class Debate:
         self,
         topic: str,
         speak_cnt: int,
+        first_speak_deciding_noti: Callable[[], None],
         first_speak_decided_noti: Callable[[], None],
         speak_ready_noti: Callable[[int], None],
-        debate_finished_noti: Callable[[], None],
+        debate_result_calculating_noti: Callable[[], None],
         debate_result_calculated_noti: Callable[[], None],
         pro: Debater,
         con: Debater,
@@ -27,9 +28,10 @@ class Debate:
         self.topic = topic
         self.max_speak_idx = speak_cnt * 2 - 1  # 다들 각자 한번씩 말해야 하니깐
 
+        self.first_speak_deciding_noti = first_speak_deciding_noti
         self.first_speak_decided_noti = first_speak_decided_noti
         self.speak_ready_noti = speak_ready_noti
-        self.debate_finished_noti = debate_finished_noti
+        self.debate_result_calculating_noti = debate_result_calculating_noti
         self.debate_result_calculated_noti = debate_result_calculated_noti
 
         self._first_speak_result: FirstSpeakResult | None = None
@@ -51,6 +53,7 @@ class Debate:
 
     def _run(self):
         """선공 결정 → 발언 루프 → 채점 (블로킹)"""
+        self.first_speak_deciding_noti()
         self._first_speak_result = self._decide_first_speak()
         self.first_speak_decided_noti()
 
@@ -60,7 +63,7 @@ class Debate:
             self.speak_ready_noti(speaker_idx)
             self.current_speak_idx += 1
 
-        self.debate_finished_noti()
+        self.debate_result_calculating_noti()
         self._debate_result = self._calculate_debate_result()
         self.debate_result_calculated_noti()
 

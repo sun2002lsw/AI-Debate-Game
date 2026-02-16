@@ -24,28 +24,43 @@ def main():
 
     # 토론 처리 알림들
     first_speak_decided = threading.Event()
-    debate_finished = threading.Event()
+    debate_result_calculating = threading.Event()
     debate_result_calculated = threading.Event()
+
+    def first_speak_deciding_noti():
+        print_deciding_first()
 
     def first_speak_decided_noti():
         first_speak_decided.set()
 
+        result = debate.first_speak_result()
+        assert result is not None
+        print_first_speak(result)
+
     def speak_ready_noti(speaker_idx: int):
         print_speak_ready(speaker_idx)
 
-    def debate_finished_noti():
-        debate_finished.set()
+    def debate_result_calculating_noti():
+        debate_result_calculating.set()
+
+        print_debate_ended(topic)
+        print_scoring()
 
     def debate_result_calculated_noti():
         debate_result_calculated.set()
+
+        result = debate.debate_result()
+        assert result is not None
+        print_debate_result(result)
 
     # 토론 구성
     debate = Debate(
         topic=topic,
         speak_cnt=speak_cnt,
+        first_speak_deciding_noti=first_speak_deciding_noti,
         first_speak_decided_noti=first_speak_decided_noti,
         speak_ready_noti=speak_ready_noti,
-        debate_finished_noti=debate_finished_noti,
+        debate_result_calculating_noti=debate_result_calculating_noti,
         debate_result_calculated_noti=debate_result_calculated_noti,
         moderator=moderator,
         pro=pro,
@@ -55,38 +70,17 @@ def main():
     debate.start()
 
     # 1) 선공 결정 대기
-    print_deciding_first()
     first_speak_decided.wait()
 
-    result = debate.first_speak_result()
-    assert result is not None
-    print_first_speak(result)
-
     # 2) 토론 진행
-    last_chat_id = ""
-    while not debate_finished.is_set():
+    while not debate_result_calculating.is_set():
         input()
-
         chat = debate.listen()
-        if not chat:
-            print("채팅 없음")
-            continue
+        if chat:
+            print_speak(chat.speaker_idx, chat.emotion, chat.message)
 
-        if last_chat_id == chat.id:
-            print("이미 출력됨")
-            continue
-
-        last_chat_id = chat.id
-        print_speak(chat.speaker_idx, chat.emotion, chat.message)
-
-    # 3) 종료 및 채점 대기
-    print_debate_ended(topic)
-    print_scoring()
+    # 3) 채점 완료 대기
     debate_result_calculated.wait()
-
-    result = debate.debate_result()
-    assert result is not None
-    print_debate_result(result)
 
 
 if __name__ == "__main__":
