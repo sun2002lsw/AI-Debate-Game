@@ -6,7 +6,7 @@ from common.warnings import configure as configure_warnings
 from debater import create_debater
 from persona import list_personas
 from llm import list_models, create_llm
-from debate import Debate, DebateResult
+from debate import Debate, FirstPickResult, DebateResult
 from moderator import Moderator
 
 
@@ -40,7 +40,21 @@ def main():
     con = create_debater(persona=con_perso, model=con_model)
     moderator = Moderator(llm=create_llm(mod_model))
 
-    def speak_ready_noti(speaker_idx: int):
+    first_pick_done = threading.Event()
+
+    def first_picked_noti(result: FirstPickResult) -> None:
+        pro_choice = "선공 희망" if result.pro_want_first else "후공 희망"
+        con_choice = "선공 희망" if result.con_want_first else "후공 희망"
+
+        print(f"{COLORS[2]}먼저 발언할 토론자를 선택합니다.{RESET}")
+        print(f"{COLORS[0]}찬성측: {pro_choice} - {result.pro_reason}{RESET}")
+        print(f"{COLORS[1]}반대측: {con_choice} - {result.con_reason}{RESET}")
+        print(f"{COLORS[2]}→ {"반대측" if result.first_idx else "찬성측"}이 먼저 발언합니다.{RESET}")
+        print()
+
+        first_pick_done.set()
+
+    def speak_ready_noti(speaker_idx: int) -> None:
         speaker = "반대측" if speaker_idx else "찬성측"
         print(f"\n{COLORS[2]}{speaker}의 발언이 준비되었습니다.{RESET}")
 
@@ -78,6 +92,7 @@ def main():
     debate = Debate(
         topic=topic,
         speak_cnt=speak_cnt,
+        first_picked_noti=first_picked_noti,
         speak_ready_noti=speak_ready_noti,
         score_calculated_noti=score_calculated_noti,
         moderator=moderator,
@@ -85,16 +100,9 @@ def main():
         con=con,
     )
 
-    # 1) 선공 결정
-    pro_want_first, pro_reason, con_want_first, con_reason, first_idx = debate.pick_first()
-    pro_choice = "선공 희망" if pro_want_first else "후공 희망"
-    con_choice = "선공 희망" if con_want_first else "후공 희망"
-
-    print(f"{COLORS[2]}먼저 발언할 토론자를 선택합니다.{RESET}")
-    print(f"{COLORS[0]}찬성측: {pro_choice} - {pro_reason}{RESET}")
-    print(f"{COLORS[1]}반대측: {con_choice} - {con_reason}{RESET}")
-    print(f"{COLORS[2]}→ {"반대측" if first_idx else "찬성측"}이 먼저 발언합니다.{RESET}")
-    print()
+    # 1) 선공 결정 대기
+    print(f"{COLORS[2]}선공을 결정하고 있습니다...{RESET}")
+    first_pick_done.wait()
 
     # 2) 토론 진행
     while not debate.finished():

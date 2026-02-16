@@ -7,7 +7,7 @@ from langchain_core.messages import BaseMessage, AIMessage
 from debater import Debater
 from debater.schemas import SpeakResponse
 from moderator import Moderator
-from .schemas import DebateResult
+from .schemas import FirstPickResult, DebateResult
 from .score_calculator import calculate
 
 
@@ -16,6 +16,7 @@ class Debate:
         self,
         topic: str,
         speak_cnt: int,
+        first_picked_noti: Callable[[FirstPickResult], None],
         speak_ready_noti: Callable[[int], None],
         score_calculated_noti: Callable[[DebateResult], None],
         pro: Debater,
@@ -25,6 +26,7 @@ class Debate:
         self.topic = topic
         self.max_speak_idx = speak_cnt * 2 - 1  # 다들 각자 한번씩 말해야 하니깐
 
+        self.first_picked_noti = first_picked_noti
         self.speak_ready_noti = speak_ready_noti
         self.score_calculated_noti = score_calculated_noti
         self._executor = ThreadPoolExecutor(max_workers=1)
@@ -39,7 +41,19 @@ class Debate:
         self.current_speak_idx = 0
         self.chat_history: list[BaseMessage] = []
 
-    def pick_first(self) -> tuple[bool, str, bool, str, int]:
+        self._start_pick_first()
+
+    def _start_pick_first(self) -> None:
+        """선공 결정을 백그라운드에서 시작"""
+        future = self._executor.submit(self._pick_first)
+
+        def _notify(future: Future[FirstPickResult]) -> None:
+            if not future.exception():
+                self.first_picked_noti(future.result())
+
+        future.add_done_callback(_notify)
+
+    def _pick_first(self) -> FirstPickResult:
         """누가 먼저 최초 발언을 할지 결정"""
         pro_want_first, pro_reason = self.pro.want_first(self.topic, True)
         con_want_first, con_reason = self.con.want_first(self.topic, False)
@@ -52,13 +66,15 @@ class Debate:
         # 다음 발언 미리 준비
         self._prepare()
 
-        return (
-            pro_want_first,
-            pro_reason,
-            con_want_first,
-            con_reason,
-            self.start_speak_idx,
+        result = FirstPickResult(
+            pro_want_first=pro_want_first,
+            pro_reason=pro_reason,
+            con_want_first=con_want_first,
+            con_reason=con_reason,
+            first_idx=self.start_speak_idx,
         )
+
+        return result
 
     def finished(self) -> bool:
         return self.current_speak_idx > self.max_speak_idx
@@ -76,7 +92,7 @@ class Debate:
         return speaker_idx, response.emotion.value, response.message
 
     def _prepare(self):
-        """다음 발언을 백그라운드에서 준비 시작."""
+        """다음 발언을 백그라운드에서 준비 시작"""
         if self.finished():
             return
 
@@ -90,7 +106,7 @@ class Debate:
         self._future.add_done_callback(_notify)
 
     def _start_scoring(self):
-        """채점을 백그라운드에서 시작. 토론이 끝나지 않았으면 무시."""
+        """채점을 백그라운드에서 시작. 토론이 끝나지 않았으면 무시"""
         if not self.finished():
             return
 
@@ -124,9 +140,11 @@ class Debate:
     def _score_calculate(self) -> DebateResult:
         scores = self.moderator.analyze(self.topic, self.chat_history)
 
-        return DebateResult(
+        result = DebateResult(
             pro_scores=scores[self.pro.id],
             pro_result=calculate(scores[self.pro.id]),
             con_scores=scores[self.con.id],
             con_result=calculate(scores[self.con.id]),
         )
+
+        return result
