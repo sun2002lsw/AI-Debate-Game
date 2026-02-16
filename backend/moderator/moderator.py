@@ -1,6 +1,7 @@
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage
 
+from common.schemas import Chat
 from . import prompts, schemas
 
 
@@ -8,7 +9,7 @@ class Moderator:
     def __init__(self, llm: BaseChatModel):
         self.llm = llm
 
-    def interrupt(self, topic: str, chat_history: list[BaseMessage]) -> str:
+    def interrupt(self, topic: str, chat_history: list[Chat]) -> str:
         messages: list[BaseMessage] = []
 
         system_prompt = prompts.get_system_prompt(topic)
@@ -25,7 +26,7 @@ class Moderator:
         return result.message
 
     def analyze(
-        self, topic: str, chat_history: list[BaseMessage]
+        self, topic: str, chat_history: list[Chat]
     ) -> dict[str, schemas.DebateScore]:
         messages: list[BaseMessage] = []
 
@@ -42,15 +43,14 @@ class Moderator:
         result: schemas.AnalyzeResponse = response  # type: ignore[assignment]
         return result.scores
 
-    def _format_chat_history(self, chat_history: list[BaseMessage]) -> str:
+    def _format_chat_history(self, chat_history: list[Chat]) -> str:
         lines: list[str] = []
         for chat in chat_history:
-            if not chat.id or chat.id == "":
+            if chat.speaker_id == "":
                 speaker = "사회자"
             else:
-                speaker = chat.id
+                speaker = chat.speaker_id
 
-            message = chat.content  # type: ignore[assignment]
-            lines.append(f"{speaker}: {message}")
+            lines.append(f"{speaker}: {chat.message}")
 
         return "\n\n".join(lines)

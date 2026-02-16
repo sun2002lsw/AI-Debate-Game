@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from moderator import DebateScore
+from moderator.schemas import DebateScore
 
 
 class FirstSpeakResult(BaseModel):

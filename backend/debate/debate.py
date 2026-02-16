@@ -3,8 +3,7 @@ import threading
 from concurrent.futures import ThreadPoolExecutor, Future
 from typing import Callable
 
-from langchain_core.messages import BaseMessage, AIMessage
-
+from common.schemas import Chat
 from debater import Debater
 from debater.schemas import SpeakResponse
 from moderator import Moderator
@@ -44,7 +43,7 @@ class Debate:
         self.speakers = (pro, con)
         self.start_speak_idx = 0
         self.current_speak_idx = 0
-        self.chat_history: list[BaseMessage] = []
+        self.chat_history: list[Chat] = []
 
     def start(self):
         """선공 결정 → 종료 대기 → 채점 (블로킹)"""
@@ -89,7 +88,7 @@ class Debate:
     def listen(self) -> tuple[int, str, str]:
         """준비된 발언 반환 (미완료 시 블로킹). 자동으로 다음 발언 준비 시작"""
         speaker_idx, response = self._future.result()
-        self.chat_history.append(AIMessage(content=response.message, id=self.speakers[speaker_idx].id))
+        self.chat_history.append(Chat(speaker_id=self.speakers[speaker_idx].id, message=response.message))
         self.current_speak_idx += 1
 
         self._prepare()
@@ -128,7 +127,7 @@ class Debate:
         if len(message) == 0:
             message = self.moderator.interrupt(self.topic, self.chat_history)
 
-        self.chat_history.append(AIMessage(content=message, id=""))
+        self.chat_history.append(Chat(speaker_id="", message=message))
 
         return message
 
