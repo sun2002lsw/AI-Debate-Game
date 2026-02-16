@@ -1,5 +1,5 @@
+import queue
 import random
-import threading
 import uuid
 from typing import Callable
 
@@ -32,7 +32,7 @@ class Debate:
         self.debate_result_calculated_noti = debate_result_calculated_noti
 
         self._first_speak_result: FirstSpeakResult | None = None
-        self._listened_event = threading.Event()
+        self._last_speak: queue.Queue[Chat] = queue.Queue(maxsize=1)
         self._debate_result: DebateResult | None = None
 
         self.pro = pro
@@ -49,13 +49,11 @@ class Debate:
         self._first_speak_result = self._decide_first_speak()
         self.first_speak_decided_noti()
 
-        while not self._finished():
-            speaker_idx = self._speak()
+        while self.current_speak_idx <= self.max_speak_idx:
+            speaker_idx, chat = self._speak()
+            self._last_speak.put(chat)
             self.speak_ready_noti(speaker_idx)
             self.current_speak_idx += 1
-
-            self._listened_event.wait()
-            self._listened_event.clear()
 
         self.debate_finished_noti()
         self._debate_result = self._calculate_debate_result()
@@ -81,10 +79,7 @@ class Debate:
 
         return result
 
-    def _finished(self) -> bool:
-        return self.current_speak_idx > self.max_speak_idx
-
-    def _speak(self) -> int:
+    def _speak(self) -> tuple[int, Chat]:
         """현재 순서 화자의 발언 생성"""
         speaker_idx = (self.start_speak_idx + self.current_speak_idx) % 2
         speaker = self.speakers[speaker_idx]
@@ -104,7 +99,7 @@ class Debate:
         chat = Chat(id=id, speaker_idx=speaker_idx, speaker_id=speaker.id, emotion=emotion, message=message)
         self.chat_history.append(chat)
 
-        return speaker_idx
+        return speaker_idx, chat
 
     def _calculate_debate_result(self) -> DebateResult:
         scores = self.moderator.analyze(self.topic, self.chat_history)
@@ -122,13 +117,10 @@ class Debate:
         return self._first_speak_result
 
     def listen(self) -> Chat | None:
-        if len(self.chat_history) == 0 or self._finished():
+        try:
+            return self._last_speak.get_nowait()
+        except queue.Empty:
             return None
-
-        chat = self.chat_history[-1]
-        self._listened_event.set()
-
-        return chat
 
     def debate_result(self) -> DebateResult | None:
         return self._debate_result
