@@ -15,7 +15,7 @@ app.add_middleware(
 
 
 @app.get("/")
-async def root():
+async def root() -> dict[str, str]:
     return {"message": "AI 토론 게임 API 서버가 실행 중입니다."}
 
 

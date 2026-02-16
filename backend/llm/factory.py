@@ -36,12 +36,12 @@ _PROVIDER_ENV_KEYS: dict[str, str] = {
 
 
 def list_models() -> list[str]:
-    """추천 LLM 모델 이름 리스트를 반환."""
+    """추천 LLM 모델 이름 리스트를 반환"""
     return sorted(_RECOMMENDED_MODELS)
 
 
 def _get_model_name(value: str | int) -> str:
-    """str | int → model_name 문자열. 리스트에 없으면 에러."""
+    """str | int → model_name 문자열. 리스트에 없으면 에러"""
     models = list_models()
 
     if isinstance(value, int):
@@ -57,7 +57,7 @@ def _get_model_name(value: str | int) -> str:
 
 
 def create_llm(value: str | int) -> BaseChatModel:
-    """str | int → BaseChatModel 객체. 리스트에 없으면 에러."""
+    """str | int → BaseChatModel 객체. 리스트에 없으면 에러"""
     model_name = _get_model_name(value)
 
     provider = _resolve_provider(model_name)

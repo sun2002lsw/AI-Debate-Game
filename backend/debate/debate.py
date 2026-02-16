@@ -46,11 +46,11 @@ class Debate:
 
         self._start_pick_first()
 
-    def _start_pick_first(self) -> None:
+    def _start_pick_first(self):
         """선공 결정을 백그라운드에서 시작"""
         future = self._executor.submit(self._pick_first)
 
-        def _notify(future: Future[FirstPickResult]) -> None:
+        def _notify(future: Future[FirstPickResult]):
             self._first_pick_result = future.result()
             self.first_picked_noti()
 
@@ -142,7 +142,9 @@ class Debate:
     def moderator_interrupt(self, message: str) -> str:
         if len(message) == 0:
             message = self.moderator.interrupt(self.topic, self.chat_history)
+
         self.chat_history.append(AIMessage(content=message, id=""))
+
         return message
 
     def _score_calculate(self) -> DebateResult:

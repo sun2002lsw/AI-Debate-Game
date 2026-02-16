@@ -26,10 +26,10 @@ def main():
     first_pick_done = threading.Event()
     score_done = threading.Event()
 
-    def first_picked_noti() -> None:
+    def first_picked_noti():
         first_pick_done.set()
 
-    def speak_ready_noti(speaker_idx: int) -> None:
+    def speak_ready_noti(speaker_idx: int):
         print_speak_ready(speaker_idx)
 
     def score_calculated_noti():

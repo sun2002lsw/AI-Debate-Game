@@ -13,6 +13,7 @@ def get_system_prompt(topic: str) -> str:
         common_prompts.topic(topic),
         common_prompts.rules(),
     ]
+
     return "\n\n".join(sections)
 
 

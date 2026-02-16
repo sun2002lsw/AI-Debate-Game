@@ -23,7 +23,7 @@ def input_debate_setup() -> tuple[str, int]:
     return topic, speak_cnt
 
 
-def print_options(personas: list[Persona], models: list[str]) -> None:
+def print_options(personas: list[Persona], models: list[str]):
     print("\n===== 페르소나 목록 =====")
     for i, p in enumerate(personas):
         print(f"  {i}: {p.name}({p.age}세) - {p.summary}")
@@ -44,15 +44,15 @@ def input_selections() -> tuple[int, int, int, int, int]:
     return pro_perso, pro_model, con_perso, con_model, mod_model
 
 
-def print_speak_ready(speaker_idx: int) -> None:
+def print_speak_ready(speaker_idx: int):
     print(f"\n{_COLORS[2]}{_SIDE_NAMES[speaker_idx]}의 발언이 준비되었습니다.{_RESET}")
 
 
-def print_deciding_first() -> None:
+def print_deciding_first():
     print(f"{_COLORS[2]}선공을 결정하고 있습니다...{_RESET}")
 
 
-def print_first_pick(result: FirstPickResult) -> None:
+def print_first_pick(result: FirstPickResult):
     pro_choice = "선공 희망" if result.pro_want_first else "후공 희망"
     con_choice = "선공 희망" if result.con_want_first else "후공 희망"
 
@@ -63,20 +63,20 @@ def print_first_pick(result: FirstPickResult) -> None:
     print()
 
 
-def print_speak(speaker_idx: int, emotion: str, message: str) -> None:
+def print_speak(speaker_idx: int, emotion: str, message: str):
     side = _SIDE_NAMES[speaker_idx]
     print(f"{_COLORS[speaker_idx]}{side}: ({emotion}) {message}{_RESET}")
 
 
-def print_debate_ended(topic: str) -> None:
+def print_debate_ended(topic: str):
     print(f"\n{_COLORS[2]}[{topic}] 주제에 대한 토론이 종료되었습니다.{_RESET}")
 
 
-def print_scoring() -> None:
+def print_scoring():
     print(f"{_COLORS[2]}채점 중입니다...{_RESET}")
 
 
-def print_debate_result(result: DebateResult) -> None:
+def print_debate_result(result: DebateResult):
     print(f"\n{_COLORS[2]}===== 토론 평가 결과 ====={_RESET}")
     for side, color, scores, total in [
         ("찬성측", _COLORS[0], result.pro_scores, result.pro_result),

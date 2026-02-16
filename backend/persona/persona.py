@@ -27,6 +27,6 @@ class Persona:
                 age = int(stripped.removeprefix("나이:").strip())
             elif stripped:
                 rest_lines.append(stripped)
-
         summary = "\n".join(rest_lines)
+
         return name, age, summary
