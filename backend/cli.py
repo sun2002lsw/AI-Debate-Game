@@ -24,6 +24,7 @@ def main():
 
     # 토론 처리 알림들
     first_speak_decided = threading.Event()
+    debate_finished = threading.Event()
     debate_result_calculated = threading.Event()
 
     def first_speak_decided_noti():
@@ -31,6 +32,9 @@ def main():
 
     def speak_ready_noti(speaker_idx: int):
         print_speak_ready(speaker_idx)
+
+    def debate_finished_noti():
+        debate_finished.set()
 
     def debate_result_calculated_noti():
         debate_result_calculated.set()
@@ -41,6 +45,7 @@ def main():
         speak_cnt=speak_cnt,
         first_speak_decided_noti=first_speak_decided_noti,
         speak_ready_noti=speak_ready_noti,
+        debate_finished_noti=debate_finished_noti,
         debate_result_calculated_noti=debate_result_calculated_noti,
         moderator=moderator,
         pro=pro,
@@ -58,12 +63,20 @@ def main():
     print_first_speak(result)
 
     # 2) 토론 진행
-    while True:
+    last_chat_id = ""
+    while not debate_finished.is_set():
         input()
+
         chat = debate.listen()
         if not chat:
-            break
+            print("채팅 없음")
+            continue
 
+        if last_chat_id == chat.id:
+            print("이미 출력됨")
+            continue
+
+        last_chat_id = chat.id
         print_speak(chat.speaker_idx, chat.emotion, chat.message)
 
     # 3) 종료 및 채점 대기
