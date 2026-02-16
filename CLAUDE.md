@@ -16,6 +16,7 @@ backend/
     prompts.py         #   시스템/사용자 프롬프트 템플릿
   debate/              # 토론 모듈 — 토론 진행 및 상태 관리
     debate.py          #   Debate 클래스 (라운드, 턴, 히스토리 관리)
+    schemas.py         #   Pydantic 모델 (DebateResult)
     score_calculator.py #   calculate() — DebateScore → 가중 평균 점수 (100점 기준)
   moderator/           # 사회자 모듈 — 토론 이의 제기 및 평가
     moderator.py       #   Moderator 클래스 (interrupt, analyze)
@@ -57,6 +58,9 @@ frontend/
 - 1~2개만 가져올 때는 `from module import name` 방식 허용
 - `__init__.py`의 re-export는 `from .module import name` 방식 유지
 - `__init__.py`에는 re-export만 작성할 것 — 로직, 설정, 부수효과 코드를 넣지 않기
+
+### 타입 힌트
+- 모든 함수의 매개변수와 반환값에 반드시 타입 힌트를 명시할 것
 
 ### 파일 포맷
 - 모든 파일은 POSIX 규칙에 따라 마지막에 반드시 빈 줄(trailing newline)을 포함할 것
