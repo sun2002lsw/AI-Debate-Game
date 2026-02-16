@@ -31,7 +31,6 @@ class Debate:
         self.score_calculated_noti = score_calculated_noti
         self._first_speak_result: FirstSpeakResult | None = None
         self._debate_result: DebateResult | None = None
-        self._current_speak: tuple[int, SpeakResponse] | None = None
         self._prepared_event = threading.Event()
         self._listened_event = threading.Event()
 
@@ -50,8 +49,16 @@ class Debate:
         self.first_speak_decided_noti()
 
         while not self.finished():
-            speaker_idx = (self.start_speak_idx + self.current_speak_idx) % 2
-            self._current_speak = self._generate(speaker_idx)
+            speaker_idx, response = self._generate()
+            id = str(uuid.uuid4())
+            chat = Chat(
+                id=id,
+                speaker_id=self.speakers[speaker_idx].id,
+                emotion=response.emotion.value,
+                message=response.message,
+            )
+            self.chat_history.append(chat)
+            self.current_speak_idx += 1
             self.speak_ready_noti(speaker_idx)
             self._prepared_event.set()
             self._listened_event.wait()
@@ -94,22 +101,16 @@ class Debate:
         self._prepared_event.wait()
         self._prepared_event.clear()
 
-        speaker_idx, response = self._current_speak
-
-        id = str(uuid.uuid4())
-        speaker_id = self.speakers[speaker_idx].id
-        message = response.message
-        chat = Chat(id=id, speaker_id=speaker_id, message=message)
-
-        self.chat_history.append(chat)
-        self.current_speak_idx += 1
+        chat = self.chat_history[-1]
+        speaker_idx = 0 if chat.speaker_id == self.pro.id else 1
 
         self._listened_event.set()
 
-        return speaker_idx, response.emotion.value, response.message
+        return speaker_idx, chat.emotion, chat.message
 
-    def _generate(self, speaker_idx: int) -> tuple[int, SpeakResponse]:
-        """실제 LLM 호출 (백그라운드 스레드에서 실행)"""
+    def _generate(self) -> tuple[int, SpeakResponse]:
+        """현재 순서 화자의 발언 생성"""
+        speaker_idx = (self.start_speak_idx + self.current_speak_idx) % 2
         speaker = self.speakers[speaker_idx]
         is_pro = speaker_idx == 0
 
@@ -125,7 +126,8 @@ class Debate:
         if len(message) == 0:
             message = self.moderator.interrupt(self.topic, self.chat_history)
 
-        self.chat_history.append(Chat(speaker_id="", message=message))
+        id = str(uuid.uuid4())
+        self.chat_history.append(Chat(id=id, speaker_id="", emotion="", message=message))
 
         return message
 
