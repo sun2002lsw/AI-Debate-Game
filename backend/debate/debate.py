@@ -5,7 +5,6 @@ from typing import Callable
 
 from common.schemas import Chat
 from debater import Debater
-from debater.schemas import SpeakResponse
 from moderator import Moderator
 from .schemas import FirstSpeakResult, DebateResult
 from .score_calculator import calculate
@@ -18,7 +17,7 @@ class Debate:
         speak_cnt: int,
         first_speak_decided_noti: Callable[[], None],
         speak_ready_noti: Callable[[int], None],
-        score_calculated_noti: Callable[[], None],
+        debate_result_noti: Callable[[], None],
         pro: Debater,
         con: Debater,
         moderator: Moderator,
@@ -28,11 +27,11 @@ class Debate:
 
         self.first_speak_decided_noti = first_speak_decided_noti
         self.speak_ready_noti = speak_ready_noti
-        self.score_calculated_noti = score_calculated_noti
+        self.debate_result_noti = debate_result_noti
+
         self._first_speak_result: FirstSpeakResult | None = None
-        self._debate_result: DebateResult | None = None
-        self._prepared_event = threading.Event()
         self._listened_event = threading.Event()
+        self._debate_result: DebateResult | None = None
 
         self.pro = pro
         self.con = con
@@ -48,24 +47,16 @@ class Debate:
         self._first_speak_result = self._decide_first_speak()
         self.first_speak_decided_noti()
 
-        while not self.finished():
-            speaker_idx, response = self._generate()
-            id = str(uuid.uuid4())
-            chat = Chat(
-                id=id,
-                speaker_id=self.speakers[speaker_idx].id,
-                emotion=response.emotion.value,
-                message=response.message,
-            )
-            self.chat_history.append(chat)
-            self.current_speak_idx += 1
+        while self.current_speak_idx <= self.max_speak_idx:
+            speaker_idx = self._speak()
             self.speak_ready_noti(speaker_idx)
-            self._prepared_event.set()
+            self.current_speak_idx += 1
+
             self._listened_event.wait()
             self._listened_event.clear()
 
-        self._debate_result = self._score_calculate()
-        self.score_calculated_noti()
+        self._debate_result = self._calculate_debate_result()
+        self.debate_result_noti()
 
     def _decide_first_speak(self) -> FirstSpeakResult:
         """누가 먼저 최초 발언을 할지 결정"""
@@ -87,51 +78,30 @@ class Debate:
 
         return result
 
-    def first_speak_result(self) -> FirstSpeakResult | None:
-        return self._first_speak_result
-
-    def debate_result(self) -> DebateResult | None:
-        return self._debate_result
-
-    def finished(self) -> bool:
-        return self.current_speak_idx > self.max_speak_idx
-
-    def listen(self) -> tuple[int, str, str]:
-        """준비된 발언 반환 (미완료 시 블로킹)"""
-        self._prepared_event.wait()
-        self._prepared_event.clear()
-
-        chat = self.chat_history[-1]
-        speaker_idx = 0 if chat.speaker_id == self.pro.id else 1
-
-        self._listened_event.set()
-
-        return speaker_idx, chat.emotion, chat.message
-
-    def _generate(self) -> tuple[int, SpeakResponse]:
+    def _speak(self) -> int:
         """현재 순서 화자의 발언 생성"""
         speaker_idx = (self.start_speak_idx + self.current_speak_idx) % 2
         speaker = self.speakers[speaker_idx]
         is_pro = speaker_idx == 0
 
+        # 발언 진행
         if len(self.chat_history) == 0:
             response = speaker.first_speak(self.topic, is_pro)
         else:
             remain_cnt = (self.max_speak_idx - self.current_speak_idx) // 2 + 1  # 남은 횟수는 인덱스 + 1
             response = speaker.next_speak(self.topic, is_pro, self.chat_history, remain_cnt)
 
-        return speaker_idx, response
-
-    def moderator_interrupt(self, message: str) -> str:
-        if len(message) == 0:
-            message = self.moderator.interrupt(self.topic, self.chat_history)
-
+        # 발언 저장
         id = str(uuid.uuid4())
-        self.chat_history.append(Chat(id=id, speaker_id="", emotion="", message=message))
+        speaker_id = self.speakers[speaker_idx].id
+        emotion = response.emotion.value
+        message = response.message
+        chat = Chat(id=id, speaker_id=speaker_id, emotion=emotion, message=message)
+        self.chat_history.append(chat)
 
-        return message
+        return speaker_idx
 
-    def _score_calculate(self) -> DebateResult:
+    def _calculate_debate_result(self) -> DebateResult:
         scores = self.moderator.analyze(self.topic, self.chat_history)
 
         result = DebateResult(
@@ -142,3 +112,25 @@ class Debate:
         )
 
         return result
+
+    def first_speak_result(self) -> FirstSpeakResult | None:
+        return self._first_speak_result
+
+    def listen(self) -> tuple[int, Chat]:
+        chat = self.chat_history[-1]
+        self._listened_event.set()
+
+        speaker_idx = 0 if chat.speaker_id == self.pro.id else 1
+        return speaker_idx, chat
+
+    def debate_result(self) -> DebateResult | None:
+        return self._debate_result
+
+    def moderator_interrupt(self, message: str) -> str:
+        if len(message) == 0:
+            message = self.moderator.interrupt(self.topic, self.chat_history)
+
+        id = str(uuid.uuid4())
+        self.chat_history.append(Chat(id=id, speaker_id="", emotion="", message=message))
+
+        return message
