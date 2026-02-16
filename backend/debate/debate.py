@@ -1,4 +1,5 @@
 import random
+import threading
 from concurrent.futures import ThreadPoolExecutor, Future
 from typing import Callable
 
@@ -34,6 +35,7 @@ class Debate:
 
         self._first_speak_result: FirstSpeakResult | None = None
         self._debate_result: DebateResult | None = None
+        self._finished_event = threading.Event()
 
         self.pro = pro
         self.con = con
@@ -45,10 +47,15 @@ class Debate:
         self.chat_history: list[BaseMessage] = []
 
     def start(self):
-        """선공 결정 및 첫 발언 준비 (블로킹)"""
+        """선공 결정 → 종료 대기 → 채점 (블로킹)"""
         self._first_speak_result = self._decide_first_speak()
         self.first_speak_decided_noti()
         self._prepare()
+
+        self._finished_event.wait()
+
+        self._debate_result = self._score_calculate()
+        self.score_calculated_noti()
 
     def _decide_first_speak(self) -> FirstSpeakResult:
         """누가 먼저 최초 발언을 할지 결정"""
@@ -85,9 +92,9 @@ class Debate:
         self.chat_history.append(AIMessage(content=response.message, id=self.speakers[speaker_idx].id))
         self.current_speak_idx += 1
 
-        # 다음 발언 미리 준비
         self._prepare()
-        self._start_scoring()
+        if self.finished():
+            self._finished_event.set()
 
         return speaker_idx, response.emotion.value, response.message
 
@@ -103,19 +110,6 @@ class Debate:
             self.speak_ready_noti(speaker_idx)
 
         self._future.add_done_callback(_notify)
-
-    def _start_scoring(self):
-        """채점을 백그라운드에서 시작. 토론이 끝나지 않았으면 무시"""
-        if not self.finished():
-            return
-
-        future = self._executor.submit(self._score_calculate)
-
-        def _notify(future: Future[DebateResult]):
-            self._debate_result = future.result()
-            self.score_calculated_noti()
-
-        future.add_done_callback(_notify)
 
     def _generate(self, speaker_idx: int) -> tuple[int, SpeakResponse]:
         """실제 LLM 호출 (백그라운드 스레드에서 실행)"""
