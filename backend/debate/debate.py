@@ -1,5 +1,6 @@
 import queue
 import random
+import threading
 import uuid
 from typing import Callable
 
@@ -45,6 +46,10 @@ class Debate:
         self.chat_history: list[Chat] = []
 
     def start(self):
+        """선공 결정 → 발언 루프 → 채점 (백그라운드 스레드에서 실행)"""
+        threading.Thread(target=self._run, daemon=True).start()
+
+    def _run(self):
         """선공 결정 → 발언 루프 → 채점 (블로킹)"""
         self._first_speak_result = self._decide_first_speak()
         self.first_speak_decided_noti()

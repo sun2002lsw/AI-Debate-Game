@@ -52,7 +52,7 @@ def main():
         con=con,
     )
 
-    threading.Thread(target=debate.start).start()
+    debate.start()
 
     # 1) 선공 결정 대기
     print_deciding_first()
