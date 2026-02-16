@@ -6,7 +6,7 @@ from common.warnings import configure as configure_warnings
 from debater import create_debater
 from persona import list_personas
 from llm import list_models, create_llm
-from debate import Debate, FirstPickResult, DebateResult
+from debate import Debate
 from moderator import Moderator
 
 
@@ -42,16 +42,7 @@ def main():
 
     first_pick_done = threading.Event()
 
-    def first_picked_noti(result: FirstPickResult) -> None:
-        pro_choice = "선공 희망" if result.pro_want_first else "후공 희망"
-        con_choice = "선공 희망" if result.con_want_first else "후공 희망"
-
-        print(f"{COLORS[2]}먼저 발언할 토론자를 선택합니다.{RESET}")
-        print(f"{COLORS[0]}찬성측: {pro_choice} - {result.pro_reason}{RESET}")
-        print(f"{COLORS[1]}반대측: {con_choice} - {result.con_reason}{RESET}")
-        print(f"{COLORS[2]}→ {"반대측" if result.first_idx else "찬성측"}이 먼저 발언합니다.{RESET}")
-        print()
-
+    def first_picked_noti() -> None:
         first_pick_done.set()
 
     def speak_ready_noti(speaker_idx: int) -> None:
@@ -60,33 +51,7 @@ def main():
 
     score_done = threading.Event()
 
-    def score_calculated_noti(result: DebateResult):
-        labels = {
-            "relevance": "주제 적합성",
-            "logic": "논리성     ",
-            "persuasiveness": "설득력     ",
-            "rebuttal": "반박 능력  ",
-            "evidence": "근거 활용  ",
-            "manner": "태도       ",
-        }
-
-        print(f"\n{COLORS[2]}===== 토론 평가 결과 ====={RESET}")
-        for side, color, scores, total in [
-            ("찬성측", COLORS[0], result.pro_scores, result.pro_result),
-            ("반대측", COLORS[1], result.con_scores, result.con_result),
-        ]:
-            print(f"\n{color}{side} 총점: {total:>5}점{RESET}")
-            for field, label in labels.items():
-                elem = getattr(scores, field)
-                print(f"{color}  {label}  {elem.score:>5}점 — {elem.reason}{RESET}")
-
-        if result.pro_result > result.con_result:
-            print(f"\n{COLORS[2]}찬성측이 승리하였습니다.{RESET}")
-        elif result.pro_result < result.con_result:
-            print(f"\n{COLORS[2]}반대측이 승리하였습니다.{RESET}")
-        else:
-            print(f"\n{COLORS[2]}무승부입니다.{RESET}")
-
+    def score_calculated_noti():
         score_done.set()
 
     debate = Debate(
@@ -104,6 +69,17 @@ def main():
     print(f"{COLORS[2]}선공을 결정하고 있습니다...{RESET}")
     first_pick_done.wait()
 
+    result = debate.first_pick_result()
+    assert result is not None
+    pro_choice = "선공 희망" if result.pro_want_first else "후공 희망"
+    con_choice = "선공 희망" if result.con_want_first else "후공 희망"
+
+    print(f"{COLORS[2]}먼저 발언할 토론자를 선택합니다.{RESET}")
+    print(f"{COLORS[0]}찬성측: {pro_choice} - {result.pro_reason}{RESET}")
+    print(f"{COLORS[1]}반대측: {con_choice} - {result.con_reason}{RESET}")
+    print(f"{COLORS[2]}→ {"반대측" if result.first_idx else "찬성측"}이 먼저 발언합니다.{RESET}")
+    print()
+
     # 2) 토론 진행
     while not debate.finished():
         input()
@@ -115,6 +91,35 @@ def main():
     print(f"\n{COLORS[2]}[{topic}] 주제에 대한 토론이 종료되었습니다.{RESET}")
     print(f"{COLORS[2]}채점 중입니다...{RESET}")
     score_done.wait()
+
+    result = debate.debate_result()
+    assert result is not None
+
+    labels = {
+        "relevance": "주제 적합성",
+        "logic": "논리성     ",
+        "persuasiveness": "설득력     ",
+        "rebuttal": "반박 능력  ",
+        "evidence": "근거 활용  ",
+        "manner": "태도       ",
+    }
+
+    print(f"\n{COLORS[2]}===== 토론 평가 결과 ====={RESET}")
+    for side, color, scores, total in [
+        ("찬성측", COLORS[0], result.pro_scores, result.pro_result),
+        ("반대측", COLORS[1], result.con_scores, result.con_result),
+    ]:
+        print(f"\n{color}{side} 총점: {total:>5}점{RESET}")
+        for field, label in labels.items():
+            elem = getattr(scores, field)
+            print(f"{color}  {label}  {elem.score:>5}점 — {elem.reason}{RESET}")
+
+    if result.pro_result > result.con_result:
+        print(f"\n{COLORS[2]}찬성측이 승리하였습니다.{RESET}")
+    elif result.pro_result < result.con_result:
+        print(f"\n{COLORS[2]}반대측이 승리하였습니다.{RESET}")
+    else:
+        print(f"\n{COLORS[2]}무승부입니다.{RESET}")
 
 
 if __name__ == "__main__":

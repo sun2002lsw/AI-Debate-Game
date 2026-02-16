@@ -16,9 +16,9 @@ class Debate:
         self,
         topic: str,
         speak_cnt: int,
-        first_picked_noti: Callable[[FirstPickResult], None],
+        first_picked_noti: Callable[[], None],
         speak_ready_noti: Callable[[int], None],
-        score_calculated_noti: Callable[[DebateResult], None],
+        score_calculated_noti: Callable[[], None],
         pro: Debater,
         con: Debater,
         moderator: Moderator,
@@ -31,6 +31,9 @@ class Debate:
         self.score_calculated_noti = score_calculated_noti
         self._executor = ThreadPoolExecutor(max_workers=1)
         self._future: Future[tuple[int, SpeakResponse]] = Future()
+
+        self._first_pick_result: FirstPickResult | None = None
+        self._debate_result: DebateResult | None = None
 
         self.pro = pro
         self.con = con
@@ -48,8 +51,8 @@ class Debate:
         future = self._executor.submit(self._pick_first)
 
         def _notify(future: Future[FirstPickResult]) -> None:
-            if not future.exception():
-                self.first_picked_noti(future.result())
+            self._first_pick_result = future.result()
+            self.first_picked_noti()
 
         future.add_done_callback(_notify)
 
@@ -76,6 +79,12 @@ class Debate:
 
         return result
 
+    def first_pick_result(self) -> FirstPickResult | None:
+        return self._first_pick_result
+
+    def debate_result(self) -> DebateResult | None:
+        return self._debate_result
+
     def finished(self) -> bool:
         return self.current_speak_idx > self.max_speak_idx
 
@@ -99,9 +108,8 @@ class Debate:
         speaker_idx = (self.start_speak_idx + self.current_speak_idx) % 2
         self._future = self._executor.submit(self._generate, speaker_idx)
 
-        def _notify(future: Future[tuple[int, SpeakResponse]]):
-            if not future.exception():
-                self.speak_ready_noti(speaker_idx)
+        def _notify(_: Future[tuple[int, SpeakResponse]]):
+            self.speak_ready_noti(speaker_idx)
 
         self._future.add_done_callback(_notify)
 
@@ -113,8 +121,8 @@ class Debate:
         future = self._executor.submit(self._score_calculate)
 
         def _notify(future: Future[DebateResult]):
-            if not future.exception():
-                self.score_calculated_noti(future.result())
+            self._debate_result = future.result()
+            self.score_calculated_noti()
 
         future.add_done_callback(_notify)
 
