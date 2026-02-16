@@ -1,5 +1,6 @@
 import random
 import threading
+import uuid
 from concurrent.futures import ThreadPoolExecutor, Future
 from typing import Callable
 
@@ -88,7 +89,13 @@ class Debate:
     def listen(self) -> tuple[int, str, str]:
         """준비된 발언 반환 (미완료 시 블로킹). 자동으로 다음 발언 준비 시작"""
         speaker_idx, response = self._future.result()
-        self.chat_history.append(Chat(speaker_id=self.speakers[speaker_idx].id, message=response.message))
+
+        id = str(uuid.uuid4())
+        speaker_id = self.speakers[speaker_idx].id
+        message = response.message
+        chat = Chat(id=id, speaker_id=speaker_id, message=message)
+
+        self.chat_history.append(chat)
         self.current_speak_idx += 1
 
         self._prepare()

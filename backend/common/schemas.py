@@ -10,5 +10,6 @@ def strip_emoji(text: str) -> str:
 
 @dataclass
 class Chat:
+    id: str
     speaker_id: str  # 빈 문자열이면 사회자 발언
     message: str
