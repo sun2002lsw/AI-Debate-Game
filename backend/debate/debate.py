@@ -44,17 +44,11 @@ class Debate:
         self.current_speak_idx = 0
         self.chat_history: list[BaseMessage] = []
 
-        self._start_decide_first_speak()
-
-    def _start_decide_first_speak(self):
-        """선공 결정을 백그라운드에서 시작"""
-        future = self._executor.submit(self._decide_first_speak)
-
-        def _notify(future: Future[FirstSpeakResult]):
-            self._first_speak_result = future.result()
-            self.first_speak_decided_noti()
-
-        future.add_done_callback(_notify)
+    def start(self):
+        """선공 결정 및 첫 발언 준비 (블로킹)"""
+        self._first_speak_result = self._decide_first_speak()
+        self.first_speak_decided_noti()
+        self._prepare()
 
     def _decide_first_speak(self) -> FirstSpeakResult:
         """누가 먼저 최초 발언을 할지 결정"""
@@ -65,9 +59,6 @@ class Debate:
             self.start_speak_idx = 0 if pro_want_first else 1
         else:
             self.start_speak_idx = random.randint(0, 1)
-
-        # 다음 발언 미리 준비
-        self._prepare()
 
         result = FirstSpeakResult(
             pro_want_first=pro_want_first,
