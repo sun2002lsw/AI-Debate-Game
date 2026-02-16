@@ -4,6 +4,7 @@
 backend/
   main.py              # FastAPI 서버 진입점 (uvicorn)
   cli.py               # CLI 기반 내부 테스트용 실행 스크립트
+  cli_print.py         # CLI 출력 전용 유틸리티 (색상·포맷 포함)
   requirements.txt     # Python 의존성 (fastapi, uvicorn, langchain-* 등)
   common/              # 공통 모듈 — debater·moderator 공유 유틸리티
     warnings.py        #   configure() — Pydantic 경고 필터

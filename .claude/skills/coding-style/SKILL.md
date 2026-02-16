@@ -9,7 +9,7 @@ description: 프로젝트 코딩 스타일 및 포맷 규칙
 
 ## Import 규칙
 
-- 모듈의 공개 API를 전부(또는 대부분) 가져올 때는 `from . import module` 방식을 사용하고, `module.name`으로 접근
+- 모듈의 공개 API를 전부(또는 대부분) 가져올 때는 `from module import *` 사용
 - 1~2개만 가져올 때는 `from module import name` 방식 허용
 - `__init__.py`의 re-export는 `from .module import name` 방식 유지
 - `__init__.py`에는 re-export만 작성할 것 — 로직, 설정, 부수효과 코드를 넣지 않기
@@ -21,6 +21,7 @@ description: 프로젝트 코딩 스타일 및 포맷 규칙
 ## 코딩 스타일
 
 - `return` 문은 항상 한 줄로 작성할 것 — 복잡한 표현식은 변수에 먼저 할당한 뒤 반환
+- `return` 앞에 코드가 여러 줄이면 `return` 직전에 빈 줄을 넣을 것 (한 줄이면 생략 가능)
 - docstring 끝에 마침표(`.`)를 붙이지 말 것
 
 ## 파일 포맷
