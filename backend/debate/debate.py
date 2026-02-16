@@ -6,7 +6,8 @@ from langchain_core.messages import BaseMessage, AIMessage
 
 from debater import Debater
 from debater.schemas import SpeakResponse
-from moderator import Moderator, DebateScore
+from moderator import Moderator
+from .schemas import DebateResult
 from .score_calculator import calculate
 
 
@@ -16,6 +17,7 @@ class Debate:
         topic: str,
         speak_cnt: int,
         speak_ready_noti: Callable[[int], None],
+        score_calculated_noti: Callable[[DebateResult], None],
         pro: Debater,
         con: Debater,
         moderator: Moderator,
@@ -24,6 +26,7 @@ class Debate:
         self.max_speak_idx = speak_cnt * 2 - 1  # 다들 각자 한번씩 말해야 하니깐
 
         self.speak_ready_noti = speak_ready_noti
+        self.score_calculated_noti = score_calculated_noti
         self._executor = ThreadPoolExecutor(max_workers=1)
         self._future: Future[tuple[int, SpeakResponse]] = Future()
 
@@ -68,6 +71,7 @@ class Debate:
 
         # 다음 발언 미리 준비
         self._prepare()
+        self._start_scoring()
 
         return speaker_idx, response.emotion.value, response.message
 
@@ -84,6 +88,19 @@ class Debate:
                 self.speak_ready_noti(speaker_idx)
 
         self._future.add_done_callback(_notify)
+
+    def _start_scoring(self):
+        """채점을 백그라운드에서 시작. 토론이 끝나지 않았으면 무시."""
+        if not self.finished():
+            return
+
+        future = self._executor.submit(self._score_calculate)
+
+        def _notify(future: Future[DebateResult]):
+            if not future.exception():
+                self.score_calculated_noti(future.result())
+
+        future.add_done_callback(_notify)
 
     def _generate(self, speaker_idx: int) -> tuple[int, SpeakResponse]:
         """실제 LLM 호출 (백그라운드 스레드에서 실행)"""
@@ -104,12 +121,12 @@ class Debate:
         self.chat_history.append(AIMessage(content=message, id=""))
         return message
 
-    def score_calculate(self) -> tuple[DebateScore, float, DebateScore, float]:
+    def _score_calculate(self) -> DebateResult:
         scores = self.moderator.analyze(self.topic, self.chat_history)
 
-        pro_scores = scores[self.pro.id]
-        pro_result = calculate(pro_scores)
-        con_scores = scores[self.con.id]
-        con_result = calculate(con_scores)
-
-        return pro_scores, pro_result, con_scores, con_result
+        return DebateResult(
+            pro_scores=scores[self.pro.id],
+            pro_result=calculate(scores[self.pro.id]),
+            con_scores=scores[self.con.id],
+            con_result=calculate(scores[self.con.id]),
+        )

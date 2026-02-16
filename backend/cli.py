@@ -1,10 +1,12 @@
+import threading
+
 from dotenv import load_dotenv
 
 from common.warnings import configure as configure_warnings
 from debater import create_debater
 from persona import list_personas
 from llm import list_models, create_llm
-from debate import Debate
+from debate import Debate, DebateResult
 from moderator import Moderator
 
 
@@ -42,8 +44,45 @@ def main():
         speaker = "반대측" if speaker_idx else "찬성측"
         print(f"\n{COLORS[2]}{speaker}의 발언이 준비되었습니다.{RESET}")
 
+    score_done = threading.Event()
+
+    def score_calculated_noti(result: DebateResult):
+        labels = {
+            "relevance": "주제 적합성",
+            "logic": "논리성     ",
+            "persuasiveness": "설득력     ",
+            "rebuttal": "반박 능력  ",
+            "evidence": "근거 활용  ",
+            "manner": "태도       ",
+        }
+
+        print(f"\n{COLORS[2]}===== 토론 평가 결과 ====={RESET}")
+        for side, color, scores, total in [
+            ("찬성측", COLORS[0], result.pro_scores, result.pro_result),
+            ("반대측", COLORS[1], result.con_scores, result.con_result),
+        ]:
+            print(f"\n{color}{side} 총점: {total:>5}점{RESET}")
+            for field, label in labels.items():
+                elem = getattr(scores, field)
+                print(f"{color}  {label}  {elem.score:>5}점 — {elem.reason}{RESET}")
+
+        if result.pro_result > result.con_result:
+            print(f"\n{COLORS[2]}찬성측이 승리하였습니다.{RESET}")
+        elif result.pro_result < result.con_result:
+            print(f"\n{COLORS[2]}반대측이 승리하였습니다.{RESET}")
+        else:
+            print(f"\n{COLORS[2]}무승부입니다.{RESET}")
+
+        score_done.set()
+
     debate = Debate(
-        topic=topic, speak_cnt=speak_cnt, speak_ready_noti=speak_ready_noti, moderator=moderator, pro=pro, con=con
+        topic=topic,
+        speak_cnt=speak_cnt,
+        speak_ready_noti=speak_ready_noti,
+        score_calculated_noti=score_calculated_noti,
+        moderator=moderator,
+        pro=pro,
+        con=con,
     )
 
     # 1) 선공 결정
@@ -64,38 +103,10 @@ def main():
         speaker = "반대측" if speaker_idx else "찬성측"
         print(f"{COLORS[speaker_idx]}{speaker}: ({emotion}) {message}{RESET}")
 
-    # 3) 종료
+    # 3) 종료 및 채점 대기
     print(f"\n{COLORS[2]}[{topic}] 주제에 대한 토론이 종료되었습니다.{RESET}")
-
-    # 4) 평가
-    pro_scores, pro_result, con_scores, con_result = debate.score_calculate()
-
-    labels = {
-        "relevance": "주제 적합성",
-        "logic": "논리성     ",
-        "persuasiveness": "설득력     ",
-        "rebuttal": "반박 능력  ",
-        "evidence": "근거 활용  ",
-        "manner": "태도       ",
-    }
-
-    print(f"\n{COLORS[2]}===== 토론 평가 결과 ====={RESET}")
-    for side, color, scores, result in [
-        ("찬성측", COLORS[0], pro_scores, pro_result),
-        ("반대측", COLORS[1], con_scores, con_result),
-    ]:
-        print(f"\n{color}{side} 총점: {result:>5}점{RESET}")
-        for field, label in labels.items():
-            elem = getattr(scores, field)
-            print(f"{color}  {label}  {elem.score:>5}점 — {elem.reason}{RESET}")
-
-    # 5) 판정
-    if pro_result > con_result:
-        print(f"\n{COLORS[2]}찬성측이 승리하였습니다.{RESET}")
-    elif pro_result < con_result:
-        print(f"\n{COLORS[2]}반대측이 승리하였습니다.{RESET}")
-    else:
-        print(f"\n{COLORS[2]}무승부입니다.{RESET}")
+    print(f"{COLORS[2]}채점 중입니다...{RESET}")
+    score_done.wait()
 
 
 if __name__ == "__main__":
