@@ -1,7 +1,6 @@
 import random
 import threading
 import uuid
-from concurrent.futures import ThreadPoolExecutor, Future
 from typing import Callable
 
 from common.schemas import Chat
@@ -30,12 +29,11 @@ class Debate:
         self.first_speak_decided_noti = first_speak_decided_noti
         self.speak_ready_noti = speak_ready_noti
         self.score_calculated_noti = score_calculated_noti
-        self._executor = ThreadPoolExecutor(max_workers=1)
-        self._future: Future[tuple[int, SpeakResponse]] = Future()
-
         self._first_speak_result: FirstSpeakResult | None = None
         self._debate_result: DebateResult | None = None
-        self._finished_event = threading.Event()
+        self._current_speak: tuple[int, SpeakResponse] | None = None
+        self._prepared_event = threading.Event()
+        self._listened_event = threading.Event()
 
         self.pro = pro
         self.con = con
@@ -47,12 +45,17 @@ class Debate:
         self.chat_history: list[Chat] = []
 
     def start(self):
-        """선공 결정 → 종료 대기 → 채점 (블로킹)"""
+        """선공 결정 → 발언 루프 → 채점 (블로킹)"""
         self._first_speak_result = self._decide_first_speak()
         self.first_speak_decided_noti()
-        self._prepare()
 
-        self._finished_event.wait()
+        while not self.finished():
+            speaker_idx = (self.start_speak_idx + self.current_speak_idx) % 2
+            self._current_speak = self._generate(speaker_idx)
+            self.speak_ready_noti(speaker_idx)
+            self._prepared_event.set()
+            self._listened_event.wait()
+            self._listened_event.clear()
 
         self._debate_result = self._score_calculate()
         self.score_calculated_noti()
@@ -87,8 +90,11 @@ class Debate:
         return self.current_speak_idx > self.max_speak_idx
 
     def listen(self) -> tuple[int, str, str]:
-        """준비된 발언 반환 (미완료 시 블로킹). 자동으로 다음 발언 준비 시작"""
-        speaker_idx, response = self._future.result()
+        """준비된 발언 반환 (미완료 시 블로킹)"""
+        self._prepared_event.wait()
+        self._prepared_event.clear()
+
+        speaker_idx, response = self._current_speak
 
         id = str(uuid.uuid4())
         speaker_id = self.speakers[speaker_idx].id
@@ -98,24 +104,9 @@ class Debate:
         self.chat_history.append(chat)
         self.current_speak_idx += 1
 
-        self._prepare()
-        if self.finished():
-            self._finished_event.set()
+        self._listened_event.set()
 
         return speaker_idx, response.emotion.value, response.message
-
-    def _prepare(self):
-        """다음 발언을 백그라운드에서 준비 시작"""
-        if self.finished():
-            return
-
-        speaker_idx = (self.start_speak_idx + self.current_speak_idx) % 2
-        self._future = self._executor.submit(self._generate, speaker_idx)
-
-        def _notify(_: Future[tuple[int, SpeakResponse]]):
-            self.speak_ready_noti(speaker_idx)
-
-        self._future.add_done_callback(_notify)
 
     def _generate(self, speaker_idx: int) -> tuple[int, SpeakResponse]:
         """실제 LLM 호출 (백그라운드 스레드에서 실행)"""
