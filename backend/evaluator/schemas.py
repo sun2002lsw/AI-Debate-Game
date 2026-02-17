@@ -1,6 +1,4 @@
-from pydantic import BaseModel, Field, field_validator
-
-from common.schemas import strip_emoji as _strip_emoji
+from pydantic import BaseModel, Field
 
 
 class ScoreElement(BaseModel):
@@ -27,15 +25,6 @@ class DebateScore(BaseModel):
     persuasiveness: ScoreElement = Field(
         description="설득력: 문장이 명료하고 호소력이 있어 청중을 설득할 수 있는 표현력을 갖췄는지 평가"
     )
-
-
-class InterruptResponse(BaseModel):
-    message: str = Field(description="이의 제기 발언 내용")
-
-    @field_validator("message")
-    @classmethod
-    def strip_emoji(cls, v: str) -> str:
-        return _strip_emoji(v)
 
 
 class AnalyzeResponse(BaseModel):

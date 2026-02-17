@@ -1,7 +1,7 @@
 from debate.schemas import DebateResult, FirstSpeakResult
 from persona import Persona
 
-_COLORS = ["\033[94m", "\033[91m", "\033[93m"]  # 찬성=파랑, 반대=빨강, 사회=노랑
+_COLORS = ["\033[94m", "\033[91m", "\033[93m"]  # 찬성=파랑, 반대=빨강, 시스템=노랑
 _RESET = "\033[0m"
 
 _SIDE_NAMES = ["찬성측", "반대측"]
@@ -38,7 +38,7 @@ def input_selections() -> tuple[int, int, int, int, int]:
     pro_model = int(input("찬성측 모델 선택: "))
     con_perso = int(input("반대측 인격 선택: "))
     con_model = int(input("반대측 모델 선택: "))
-    mod_model = int(input("사회자 모델 선택: "))
+    mod_model = int(input("평가자 모델 선택: "))
     print()
 
     return pro_perso, pro_model, con_perso, con_model, mod_model

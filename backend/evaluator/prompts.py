@@ -2,9 +2,7 @@ from common import prompts as common_prompts
 
 
 def _intro() -> str:
-    return (
-        "당신은 토론의 사회자입니다. " "중립적인 입장에서 토론을 관찰하고, 공정하게 판단하십시오."
-    )
+    return "당신은 토론의 평가자입니다. 중립적인 입장에서 토론을 관찰하고, 공정하게 판단하십시오."
 
 
 def get_system_prompt(topic: str) -> str:
@@ -15,14 +13,6 @@ def get_system_prompt(topic: str) -> str:
     ]
 
     return "\n\n".join(sections)
-
-
-def get_interrupt_prompt(chat_history: str) -> str:
-    return (
-        f"{common_prompts.chat_history_section(chat_history)}"
-        f"가장 마지막 발언에 대해 사회자로서 이의를 제기하세요.\n"
-        f"논리적 허점, 사실 오류, 또는 토론 규칙 위반이 있다면 지적하세요."
-    )
 
 
 def get_analyze_prompt(chat_history: str) -> str:

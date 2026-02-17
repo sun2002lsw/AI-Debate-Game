@@ -9,7 +9,7 @@ from debater import create_debater
 from persona import list_personas
 from llm import list_models, create_llm
 from debate import Debate
-from moderator import Moderator
+from evaluator import Evaluator
 
 
 async def main():
@@ -21,7 +21,7 @@ async def main():
     # 토론 참가자 생성
     pro = create_debater(persona=pro_perso, model=pro_model)
     con = create_debater(persona=con_perso, model=con_model)
-    moderator = Moderator(llm=create_llm(mod_model))
+    evaluator = Evaluator(llm=create_llm(mod_model))
 
     # 토론 처리 알림들
     first_speak_decided = asyncio.Event()
@@ -59,7 +59,7 @@ async def main():
         speak_ready_noti=speak_ready_noti,
         debate_result_calculating_noti=debate_result_calculating_noti,
         debate_result_calculated_noti=debate_result_calculated_noti,
-        moderator=moderator,
+        evaluator=evaluator,
         pro=pro,
         con=con,
     )

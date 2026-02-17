@@ -1,4 +1,4 @@
-from moderator import DebateScore
+from evaluator import DebateScore
 
 WEIGHTS = {
     "relevance": 5,  # 주제 적합성

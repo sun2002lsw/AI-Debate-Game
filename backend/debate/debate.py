@@ -5,7 +5,7 @@ from typing import Callable
 
 from common.schemas import Chat
 from debater import Debater
-from moderator import Moderator
+from evaluator import Evaluator
 from .schemas import FirstSpeakResult, DebateResult
 from .score_calculator import calculate
 
@@ -22,7 +22,7 @@ class Debate:
         debate_result_calculated_noti: Callable[[], None],
         pro: Debater,
         con: Debater,
-        moderator: Moderator,
+        evaluator: Evaluator,
     ):
         self.topic = topic
         self.max_speak_idx = speak_cnt * 2 - 1  # 다들 각자 한번씩 말해야 하니깐
@@ -40,7 +40,7 @@ class Debate:
 
         self.pro = pro
         self.con = con
-        self.moderator = moderator
+        self.evaluator = evaluator
 
         self.speakers = (pro, con)
         self.start_speak_idx = 0
@@ -113,7 +113,7 @@ class Debate:
 
     async def _calculate_debate_result(self) -> DebateResult:
         """토론 결과 점수 계산"""
-        scores = await self.moderator.analyze(self.topic, self.chat_history)
+        scores = await self.evaluator.analyze(self.topic, self.chat_history)
 
         result = DebateResult(
             pro_scores=scores[self.pro.id],
@@ -137,12 +137,3 @@ class Debate:
 
     def debate_result(self) -> DebateResult | None:
         return self._debate_result
-
-    async def moderator_interrupt(self, message: str) -> str:
-        if len(message) == 0:
-            message = await self.moderator.interrupt(self.topic, self.chat_history)
-
-        id = str(uuid.uuid4())
-        self.chat_history.append(Chat(id=id, speaker_idx=-1, speaker_id="", emotion="", message=message))
-
-        return message

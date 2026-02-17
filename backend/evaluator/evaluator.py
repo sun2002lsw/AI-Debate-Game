@@ -5,29 +5,11 @@ from common.schemas import Chat
 from . import prompts, schemas
 
 
-class Moderator:
+class Evaluator:
     def __init__(self, llm: BaseChatModel):
         self.llm = llm
 
-    async def interrupt(self, topic: str, chat_history: list[Chat]) -> str:
-        messages: list[BaseMessage] = []
-
-        system_prompt = prompts.get_system_prompt(topic)
-        messages.append(SystemMessage(content=system_prompt))
-
-        formatted_chat_history = self._format_chat_history(chat_history)
-        interrupt_prompt = prompts.get_interrupt_prompt(formatted_chat_history)
-        messages.append(HumanMessage(content=interrupt_prompt))
-
-        structured_llm = self.llm.with_structured_output(schemas.InterruptResponse)
-        response = await structured_llm.ainvoke(messages)
-
-        result: schemas.InterruptResponse = response  # type: ignore[assignment]
-        return result.message
-
-    async def analyze(
-        self, topic: str, chat_history: list[Chat]
-    ) -> dict[str, schemas.DebateScore]:
+    async def analyze(self, topic: str, chat_history: list[Chat]) -> dict[str, schemas.DebateScore]:
         messages: list[BaseMessage] = []
 
         system_prompt = prompts.get_system_prompt(topic)
