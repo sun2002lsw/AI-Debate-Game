@@ -6,6 +6,8 @@ backend/
   cli.py               # CLI 기반 내부 테스트용 실행 스크립트
   cli_print.py         # CLI 출력 전용 유틸리티 (색상·포맷 포함)
   requirements.txt     # Python 의존성 (fastapi, uvicorn, langchain-* 등)
+  api/                 # API 모듈 — FastAPI 엔드포인트 전용 스키마
+    schemas.py         #   PersonaResponse, DebateRequest
   common/              # 공통 모듈 — debater·evaluator 공유 유틸리티
     warnings.py        #   configure() — Pydantic 경고 필터
     schemas.py         #   EMOJI_PATTERN, strip_emoji()
