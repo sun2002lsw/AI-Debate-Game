@@ -1,7 +1,5 @@
 import asyncio
-import queue
 import random
-import threading
 import uuid
 from typing import Callable
 
@@ -36,8 +34,8 @@ class Debate:
         self.debate_result_calculated_noti = debate_result_calculated_noti
 
         self._first_speak_result: FirstSpeakResult | None = None
-        self._last_speak: queue.Queue[Chat] = queue.Queue(maxsize=1)
-        self._speak_consumed = threading.Event()
+        self._last_speak: asyncio.Queue[Chat] = asyncio.Queue(maxsize=1)
+        self._speak_consumed = asyncio.Event()
         self._debate_result: DebateResult | None = None
 
         self.pro = pro
@@ -50,7 +48,7 @@ class Debate:
         self.chat_history: list[Chat] = []
 
     def start(self):
-        threading.Thread(target=lambda: asyncio.run(self._run()), daemon=True).start()
+        asyncio.create_task(self._run())
 
     async def _run(self):
         """선공 결정 → 발언 루프 → 채점 (블로킹)"""
@@ -60,11 +58,11 @@ class Debate:
 
         while self.current_speak_idx <= self.max_speak_idx:
             speaker_idx, chat = await self._speak()
-            self._last_speak.put(chat)
+            await self._last_speak.put(chat)
             self.speak_ready_noti(speaker_idx)
             self.current_speak_idx += 1
 
-            self._speak_consumed.wait()
+            await self._speak_consumed.wait()
             self._speak_consumed.clear()
 
         self.debate_result_calculating_noti()
@@ -134,7 +132,7 @@ class Debate:
             chat = self._last_speak.get_nowait()
             self._speak_consumed.set()
             return chat
-        except queue.Empty:
+        except asyncio.QueueEmpty:
             return None
 
     def debate_result(self) -> DebateResult | None:

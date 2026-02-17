@@ -1,5 +1,5 @@
+import asyncio
 import msvcrt
-import threading
 
 from dotenv import load_dotenv
 
@@ -12,7 +12,7 @@ from debate import Debate
 from moderator import Moderator
 
 
-def main():
+async def main():
     topic, speak_cnt = input_debate_setup()
 
     print_options(list_personas(), list_models())
@@ -24,9 +24,9 @@ def main():
     moderator = Moderator(llm=create_llm(mod_model))
 
     # 토론 처리 알림들
-    first_speak_decided = threading.Event()
-    debate_result_calculating = threading.Event()
-    debate_result_calculated = threading.Event()
+    first_speak_decided = asyncio.Event()
+    debate_result_calculating = asyncio.Event()
+    debate_result_calculated = asyncio.Event()
 
     def first_speak_deciding_noti():
         print_deciding_first()
@@ -67,20 +67,20 @@ def main():
     debate.start()
 
     # 1) 선공 결정 대기
-    first_speak_decided.wait()
+    await first_speak_decided.wait()
 
     # 2) 토론 진행
     while not debate_result_calculating.is_set():
-        msvcrt.getwch()
+        await asyncio.to_thread(msvcrt.getwch)
         chat = debate.listen()
         if chat:
             print_speak(chat.speaker_idx, chat.emotion, chat.message)
 
     # 3) 채점 완료 대기
-    debate_result_calculated.wait()
+    await debate_result_calculated.wait()
 
 
 if __name__ == "__main__":
     load_dotenv()
     configure_warnings()
-    main()
+    asyncio.run(main())
