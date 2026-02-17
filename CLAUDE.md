@@ -20,8 +20,8 @@ backend/
     schemas.py         #   Pydantic 모델 (DebateResult)
     score_calculator.py #   calculate() — DebateScore → 가중 평균 점수 (100점 기준)
   evaluator/           # 평가자 모듈 — 토론 채점 및 평가
-    evaluator.py       #   Evaluator 클래스 (analyze)
-    schemas.py         #   Pydantic 모델 (DebateScore, AnalyzeResponse)
+    evaluator.py       #   Evaluator 클래스 (evaluate)
+    schemas.py         #   Pydantic 모델 (DebateScore, EvaluateResponse)
     prompts.py         #   평가자 프롬프트 템플릿
   persona/             # 페르소나 모듈 — 토론 참가자 성격 정의
     persona.py         #   Persona 클래스 (info.txt + strategy.txt 파싱)

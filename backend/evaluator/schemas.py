@@ -27,5 +27,5 @@ class DebateScore(BaseModel):
     )
 
 
-class AnalyzeResponse(BaseModel):
+class EvaluateResponse(BaseModel):
     scores: dict[str, DebateScore] = Field(description="각 토론자 id를 key로 가지는 딕셔너리")

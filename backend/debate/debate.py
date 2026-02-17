@@ -18,8 +18,8 @@ class Debate:
         first_speak_deciding_noti: Callable[[], None],
         first_speak_decided_noti: Callable[[], None],
         speak_ready_noti: Callable[[int], None],
-        debate_result_calculating_noti: Callable[[], None],
-        debate_result_calculated_noti: Callable[[], None],
+        debate_result_evaluating_noti: Callable[[], None],
+        debate_result_evaluated_noti: Callable[[], None],
         pro: Debater,
         con: Debater,
         evaluator: Evaluator,
@@ -30,8 +30,8 @@ class Debate:
         self.first_speak_deciding_noti = first_speak_deciding_noti
         self.first_speak_decided_noti = first_speak_decided_noti
         self.speak_ready_noti = speak_ready_noti
-        self.debate_result_calculating_noti = debate_result_calculating_noti
-        self.debate_result_calculated_noti = debate_result_calculated_noti
+        self.debate_result_evaluating_noti = debate_result_evaluating_noti
+        self.debate_result_evaluated_noti = debate_result_evaluated_noti
 
         self._first_speak_result: FirstSpeakResult | None = None
         self._last_speak: asyncio.Queue[Chat] = asyncio.Queue(maxsize=1)
@@ -65,9 +65,9 @@ class Debate:
             await self._speak_consumed.wait()
             self._speak_consumed.clear()
 
-        self.debate_result_calculating_noti()
-        self._debate_result = await self._calculate_debate_result()
-        self.debate_result_calculated_noti()
+        self.debate_result_evaluating_noti()
+        self._debate_result = await self._evaluate_debate_result()
+        self.debate_result_evaluated_noti()
 
     async def _decide_first_speak(self) -> FirstSpeakResult:
         """누가 먼저 최초 발언을 할지 결정"""
@@ -111,9 +111,9 @@ class Debate:
 
         return speaker_idx, chat
 
-    async def _calculate_debate_result(self) -> DebateResult:
+    async def _evaluate_debate_result(self) -> DebateResult:
         """토론 결과 점수 계산"""
-        scores = await self.evaluator.analyze(self.topic, self.chat_history)
+        scores = await self.evaluator.evaluate(self.topic, self.chat_history)
 
         result = DebateResult(
             pro_scores=scores[self.pro.id],

@@ -15,10 +15,10 @@ def get_system_prompt(topic: str) -> str:
     return "\n\n".join(sections)
 
 
-def get_analyze_prompt(chat_history: str) -> str:
+def get_evaluate_prompt(chat_history: str) -> str:
     return (
         f"{common_prompts.chat_history_section(chat_history)}"
         f"위 토론 내용을 바탕으로 각 토론자에 대해 점수를 평가하세요.\n"
-        f"각 토론자의 id를 key로 사용하여 논리(logic)와 예의(manner) 점수를 부여하세요.\n"
+        f"각 토론자의 id를 key로 사용하여 다양한 항목들에 대해 점수를 부여하세요.\n"
         f"점수는 0~100 사이이며, 반드시 구체적인 근거를 함께 제시하세요."
     )

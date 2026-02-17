@@ -25,8 +25,8 @@ async def main():
 
     # 토론 처리 알림들
     first_speak_decided = asyncio.Event()
-    debate_result_calculating = asyncio.Event()
-    debate_result_calculated = asyncio.Event()
+    debate_result_evaluating = asyncio.Event()
+    debate_result_evaluated = asyncio.Event()
 
     def first_speak_deciding_noti():
         print_deciding_first()
@@ -40,12 +40,12 @@ async def main():
     def speak_ready_noti(speaker_idx: int):
         print_speak_ready(speaker_idx)
 
-    def debate_result_calculating_noti():
-        debate_result_calculating.set()
+    def debate_result_evaluating_noti():
+        debate_result_evaluating.set()
         print_debate_ended(topic)
 
-    def debate_result_calculated_noti():
-        debate_result_calculated.set()
+    def debate_result_evaluated_noti():
+        debate_result_evaluated.set()
         result = debate.debate_result()
         assert result is not None
         print_debate_result(result)
@@ -57,8 +57,8 @@ async def main():
         first_speak_deciding_noti=first_speak_deciding_noti,
         first_speak_decided_noti=first_speak_decided_noti,
         speak_ready_noti=speak_ready_noti,
-        debate_result_calculating_noti=debate_result_calculating_noti,
-        debate_result_calculated_noti=debate_result_calculated_noti,
+        debate_result_evaluating_noti=debate_result_evaluating_noti,
+        debate_result_evaluated_noti=debate_result_evaluated_noti,
         evaluator=evaluator,
         pro=pro,
         con=con,
@@ -70,14 +70,14 @@ async def main():
     await first_speak_decided.wait()
 
     # 2) 토론 진행
-    while not debate_result_calculating.is_set():
+    while not debate_result_evaluating.is_set():
         await asyncio.to_thread(msvcrt.getwch)
         chat = debate.listen()
         if chat:
             print_speak(chat.speaker_idx, chat.emotion, chat.message)
 
     # 3) 채점 완료 대기
-    await debate_result_calculated.wait()
+    await debate_result_evaluated.wait()
 
 
 if __name__ == "__main__":
