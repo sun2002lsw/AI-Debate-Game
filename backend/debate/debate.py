@@ -7,7 +7,6 @@ from common.schemas import Chat
 from debater import Debater
 from evaluator import Evaluator
 from .schemas import FirstSpeakResult, DebateResult
-from .score_calculator import calculate
 
 
 class Debate:
@@ -113,13 +112,11 @@ class Debate:
 
     async def _evaluate_debate_result(self) -> DebateResult:
         """토론 결과 점수 계산"""
-        scores = await self.evaluator.evaluate(self.topic, self.chat_history)
+        evaluations = await self.evaluator.evaluate(self.topic, self.chat_history)
 
         result = DebateResult(
-            pro_scores=scores[self.pro.id],
-            pro_result=calculate(scores[self.pro.id]),
-            con_scores=scores[self.con.id],
-            con_result=calculate(scores[self.con.id]),
+            pro=evaluations[self.pro.id],
+            con=evaluations[self.con.id],
         )
 
         return result

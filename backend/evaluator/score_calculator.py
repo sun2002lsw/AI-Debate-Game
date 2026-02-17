@@ -1,4 +1,4 @@
-from evaluator import DebateScores
+from .schemas import DebateScores
 
 WEIGHTS = {
     "relevance": 5,  # 주제 적합성

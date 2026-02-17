@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from pydantic import BaseModel, Field
 
 
@@ -21,6 +23,16 @@ class DebateScores(BaseModel):
     persuasiveness: ScoreElement = Field(
         description="설득력: 문장이 명료하고 호소력이 있어 청중을 설득할 수 있는 표현력을 갖췄는지 평가"
     )
+
+    def to_evaluation(self) -> DebateEvaluation:
+        from .score_calculator import calculate
+
+        return DebateEvaluation(scores=self, total_score=calculate(self))
+
+
+class DebateEvaluation(BaseModel):
+    scores: DebateScores
+    total_score: float
 
 
 class EvaluateResponse(BaseModel):

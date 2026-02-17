@@ -9,7 +9,7 @@ class Evaluator:
     def __init__(self, llm: BaseChatModel):
         self.llm = llm
 
-    async def evaluate(self, topic: str, chat_history: list[Chat]) -> dict[str, schemas.DebateScores]:
+    async def evaluate(self, topic: str, chat_history: list[Chat]) -> dict[str, schemas.DebateEvaluation]:
         messages: list[BaseMessage] = []
 
         system_prompt = prompts.get_system_prompt(topic)
@@ -23,7 +23,7 @@ class Evaluator:
         response = await structured_llm.ainvoke(messages)
 
         result: schemas.EvaluateResponse = response  # type: ignore[assignment]
-        return result.debate_scores
+        return {id: scores.to_evaluation() for id, scores in result.debate_scores.items()}
 
     def _format_chat_history(self, chat_history: list[Chat]) -> str:
         lines: list[str] = []

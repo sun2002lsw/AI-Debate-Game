@@ -72,18 +72,18 @@ def print_debate_ended(topic: str):
 
 def print_debate_result(result: DebateResult):
     print(f"\n{_COLORS[2]}===== 토론 평가 결과 ====={_RESET}")
-    for side, color, scores, total in [
-        ("찬성측", _COLORS[0], result.pro_scores, result.pro_result),
-        ("반대측", _COLORS[1], result.con_scores, result.con_result),
+    for side, color, evaluation in [
+        ("찬성측", _COLORS[0], result.pro),
+        ("반대측", _COLORS[1], result.con),
     ]:
-        print(f"\n{color}{side} 총점: {total:>5}점{_RESET}")
+        print(f"\n{color}{side} 총점: {evaluation.total_score:>5}점{_RESET}")
         for field, label in _SCORE_LABELS.items():
-            elem = getattr(scores, field)
+            elem = getattr(evaluation.scores, field)
             print(f"{color}  {label}  {elem.score:>5}점 — {elem.reason}{_RESET}")
 
-    if result.pro_result > result.con_result:
+    if result.pro.total_score > result.con.total_score:
         print(f"\n{_COLORS[2]}찬성측이 승리하였습니다.{_RESET}")
-    elif result.pro_result < result.con_result:
+    elif result.pro.total_score < result.con.total_score:
         print(f"\n{_COLORS[2]}반대측이 승리하였습니다.{_RESET}")
     else:
         print(f"\n{_COLORS[2]}무승부입니다.{_RESET}")

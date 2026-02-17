@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from evaluator.schemas import DebateScores
+from evaluator.schemas import DebateEvaluation
 
 
 class FirstSpeakResult(BaseModel):
@@ -12,7 +12,5 @@ class FirstSpeakResult(BaseModel):
 
 
 class DebateResult(BaseModel):
-    pro_scores: DebateScores
-    pro_result: float
-    con_scores: DebateScores
-    con_result: float
+    pro: DebateEvaluation
+    con: DebateEvaluation
