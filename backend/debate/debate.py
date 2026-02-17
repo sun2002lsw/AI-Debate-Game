@@ -84,7 +84,7 @@ class Debate:
             pro_reason=pro_reason,
             con_want_first=con_want_first,
             con_reason=con_reason,
-            first_idx=self.start_speak_idx,
+            first_speaker_idx=self.start_speak_idx,
         )
 
         return result

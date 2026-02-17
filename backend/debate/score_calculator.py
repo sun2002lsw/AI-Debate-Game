@@ -1,4 +1,4 @@
-from evaluator import DebateScore
+from evaluator import DebateScores
 
 WEIGHTS = {
     "relevance": 5,  # 주제 적합성
@@ -12,7 +12,7 @@ WEIGHTS = {
 _TOTAL_WEIGHT = sum(WEIGHTS.values())
 
 
-def calculate(score: DebateScore) -> float:
+def calculate(score: DebateScores) -> float:
     weighted_sum = (
         0
         + score.relevance.score * WEIGHTS["relevance"]

@@ -58,7 +58,7 @@ def print_first_speak(result: FirstSpeakResult):
 
     print(f"{_COLORS[0]}찬성측: {pro_choice} - {result.pro_reason}{_RESET}")
     print(f"{_COLORS[1]}반대측: {con_choice} - {result.con_reason}{_RESET}")
-    print(f"{_COLORS[2]}→ {_SIDE_NAMES[result.first_idx]}이 먼저 발언합니다.{_RESET}")
+    print(f"{_COLORS[2]}→ {_SIDE_NAMES[result.first_speaker_idx]}이 먼저 발언합니다.{_RESET}")
 
 
 def print_speak(speaker_idx: int, emotion: str, message: str):

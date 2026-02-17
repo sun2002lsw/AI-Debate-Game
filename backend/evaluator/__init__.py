@@ -1,4 +1,4 @@
 from .evaluator import Evaluator
-from .schemas import DebateScore
+from .schemas import DebateScores
 
-__all__ = ["Evaluator", "DebateScore"]
+__all__ = ["Evaluator", "DebateScores"]
