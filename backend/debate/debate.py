@@ -3,7 +3,7 @@ import random
 import uuid
 from typing import Callable
 
-from common.schemas import Chat
+from common.schemas import Speak
 from debater import Debater
 from evaluator import Evaluator
 from .schemas import FirstSpeakResult, DebateResult
@@ -33,7 +33,7 @@ class Debate:
         self.debate_result_evaluated_noti = debate_result_evaluated_noti
 
         self._first_speak_result: FirstSpeakResult | None = None
-        self._last_speak: asyncio.Queue[Chat] = asyncio.Queue(maxsize=1)
+        self._last_speak: asyncio.Queue[Speak] = asyncio.Queue(maxsize=1)
         self._speak_consumed = asyncio.Event()
         self._debate_result: DebateResult | None = None
 
@@ -44,7 +44,7 @@ class Debate:
         self.speakers = (pro, con)
         self.start_speak_idx = 0
         self.current_speak_idx = 0
-        self.chat_history: list[Chat] = []
+        self.chat_history: list[Speak] = []
 
     def start(self):
         asyncio.create_task(self._run())
@@ -88,7 +88,7 @@ class Debate:
 
         return result
 
-    async def _speak(self) -> tuple[int, Chat]:
+    async def _speak(self) -> tuple[int, Speak]:
         """현재 순서 화자의 발언 생성"""
         speaker_idx = (self.start_speak_idx + self.current_speak_idx) % 2
         speaker = self.speakers[speaker_idx]
@@ -105,7 +105,7 @@ class Debate:
         id = str(uuid.uuid4())
         emotion = response.emotion.value
         message = response.message
-        chat = Chat(id=id, speaker_idx=speaker_idx, speaker_id=speaker.id, emotion=emotion, message=message)
+        chat = Speak(id=id, speaker_idx=speaker_idx, speaker_id=speaker.id, emotion=emotion, message=message)
         self.chat_history.append(chat)
 
         return speaker_idx, chat
@@ -124,7 +124,7 @@ class Debate:
     def first_speak_result(self) -> FirstSpeakResult | None:
         return self._first_speak_result
 
-    def listen(self) -> Chat | None:
+    def listen(self) -> Speak | None:
         try:
             chat = self._last_speak.get_nowait()
             self._speak_consumed.set()

@@ -1,7 +1,7 @@
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage
 
-from common.schemas import Chat
+from common.schemas import Speak
 from . import prompts, schemas
 
 
@@ -9,7 +9,7 @@ class Evaluator:
     def __init__(self, llm: BaseChatModel):
         self.llm = llm
 
-    async def evaluate(self, topic: str, chat_history: list[Chat]) -> dict[str, schemas.DebateEvaluation]:
+    async def evaluate(self, topic: str, chat_history: list[Speak]) -> dict[str, schemas.DebateEvaluation]:
         messages: list[BaseMessage] = []
 
         system_prompt = prompts.get_system_prompt(topic)
@@ -25,7 +25,7 @@ class Evaluator:
         result: schemas.EvaluateResponse = response  # type: ignore[assignment]
         return {id: scores.to_evaluation() for id, scores in result.debate_scores.items()}
 
-    def _format_chat_history(self, chat_history: list[Chat]) -> str:
+    def _format_chat_history(self, chat_history: list[Speak]) -> str:
         lines: list[str] = []
         for chat in chat_history:
             if chat.speaker_id == "":

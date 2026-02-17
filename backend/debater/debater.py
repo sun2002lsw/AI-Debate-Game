@@ -1,7 +1,7 @@
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage
 
-from common.schemas import Chat
+from common.schemas import Speak
 from persona import Persona
 from . import prompts, schemas
 
@@ -43,7 +43,7 @@ class Debater:
         return result
 
     async def next_speak(
-        self, topic: str, is_pro: bool, chat_history: list[Chat], remain_cnt: int
+        self, topic: str, is_pro: bool, chat_history: list[Speak], remain_cnt: int
     ) -> schemas.SpeakResponse:
         messages: list[BaseMessage] = []
 
@@ -60,7 +60,7 @@ class Debater:
         result: schemas.SpeakResponse = response  # type: ignore[assignment]
         return result
 
-    def _format_chat_history(self, chat_history: list[Chat]) -> str:
+    def _format_chat_history(self, chat_history: list[Speak]) -> str:
         lines: list[str] = []
         for chat in chat_history:
             if chat.speaker_id == "":
