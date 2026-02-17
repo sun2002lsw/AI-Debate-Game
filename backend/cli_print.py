@@ -1,19 +1,13 @@
+import unicodedata
+
 from debate.schemas import DebateResult, FirstSpeakResult
+from evaluator.schemas import DebateScores
 from persona import Persona
 
 _COLORS = ["\033[94m", "\033[91m", "\033[93m"]  # 찬성=파랑, 반대=빨강, 시스템=노랑
 _RESET = "\033[0m"
 
 _SIDE_NAMES = ["찬성측", "반대측"]
-
-_SCORE_LABELS = {
-    "relevance": "주제 적합성",
-    "logic": "논리성     ",
-    "persuasiveness": "설득력     ",
-    "rebuttal": "반박 능력  ",
-    "evidence": "근거 활용  ",
-    "manner": "태도       ",
-}
 
 
 def input_debate_setup() -> tuple[str, int]:
@@ -72,14 +66,22 @@ def print_debate_ended(topic: str):
 
 def print_debate_result(result: DebateResult):
     print(f"\n{_COLORS[2]}===== 토론 평가 결과 ====={_RESET}")
-    for side, color, evaluation in [
-        ("찬성측", _COLORS[0], result.pro),
-        ("반대측", _COLORS[1], result.con),
-    ]:
+
+    for side, color, evaluation in [("찬성측", _COLORS[0], result.pro), ("반대측", _COLORS[1], result.con)]:
         print(f"\n{color}{side} 총점: {evaluation.total_score:>5}점{_RESET}")
-        for field, label in _SCORE_LABELS.items():
-            elem = getattr(evaluation.scores, field)
-            print(f"{color}  {label}  {elem.score:>5}점 — {elem.reason}{_RESET}")
+
+        # description "라벨: 설명" 형태에서 콜론 앞부분(라벨)만 추출
+        labels: dict[str, str] = {}
+        for name, field in DebateScores.model_fields.items():
+            desc = field.description or name
+            labels[name] = desc.split(":")[0]
+
+        # 가장 넓은 라벨에 맞춰 패딩하여 테이블 정렬
+        max_w = max(_display_width(label) for label in labels.values())
+        for name, label in labels.items():
+            pad = " " * (max_w - _display_width(label))
+            elem = getattr(evaluation.scores, name)
+            print(f"{color}  {label}{pad}  {elem.score:>5}점 — {elem.reason}{_RESET}")
 
     if result.pro.total_score > result.con.total_score:
         print(f"\n{_COLORS[2]}찬성측이 승리하였습니다.{_RESET}")
@@ -87,3 +89,20 @@ def print_debate_result(result: DebateResult):
         print(f"\n{_COLORS[2]}반대측이 승리하였습니다.{_RESET}")
     else:
         print(f"\n{_COLORS[2]}무승부입니다.{_RESET}")
+
+
+def _display_width(s: str) -> int:
+    """터미널에서의 실제 표시 폭을 계산한다.
+
+    한글·한자 등 동아시아 전각 문자(F, W)는 2칸,
+    영문·숫자·공백 등 반각 문자는 1칸으로 계산한다.
+    """
+    width = 0
+    for char in s:
+        east_asian = unicodedata.east_asian_width(char)
+        if east_asian in ("F", "W"):  # Fullwidth / Wide — 한글, 한자 등
+            width += 2
+        else:
+            width += 1
+
+    return width
