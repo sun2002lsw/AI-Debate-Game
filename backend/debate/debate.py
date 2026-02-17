@@ -1,3 +1,4 @@
+import asyncio
 import queue
 import random
 import threading
@@ -49,16 +50,16 @@ class Debate:
         self.chat_history: list[Chat] = []
 
     def start(self):
-        threading.Thread(target=self._run, daemon=True).start()
+        threading.Thread(target=lambda: asyncio.run(self._run()), daemon=True).start()
 
-    def _run(self):
+    async def _run(self):
         """선공 결정 → 발언 루프 → 채점 (블로킹)"""
         self.first_speak_deciding_noti()
-        self._first_speak_result = self._decide_first_speak()
+        self._first_speak_result = await self._decide_first_speak()
         self.first_speak_decided_noti()
 
         while self.current_speak_idx <= self.max_speak_idx:
-            speaker_idx, chat = self._speak()
+            speaker_idx, chat = await self._speak()
             self._last_speak.put(chat)
             self.speak_ready_noti(speaker_idx)
             self.current_speak_idx += 1
@@ -67,13 +68,13 @@ class Debate:
             self._speak_consumed.clear()
 
         self.debate_result_calculating_noti()
-        self._debate_result = self._calculate_debate_result()
+        self._debate_result = await self._calculate_debate_result()
         self.debate_result_calculated_noti()
 
-    def _decide_first_speak(self) -> FirstSpeakResult:
+    async def _decide_first_speak(self) -> FirstSpeakResult:
         """누가 먼저 최초 발언을 할지 결정"""
-        pro_want_first, pro_reason = self.pro.want_first(self.topic, True)
-        con_want_first, con_reason = self.con.want_first(self.topic, False)
+        pro_want_first, pro_reason = await self.pro.want_first(self.topic, True)
+        con_want_first, con_reason = await self.con.want_first(self.topic, False)
 
         if pro_want_first != con_want_first:
             self.start_speak_idx = 0 if pro_want_first else 1
@@ -90,7 +91,7 @@ class Debate:
 
         return result
 
-    def _speak(self) -> tuple[int, Chat]:
+    async def _speak(self) -> tuple[int, Chat]:
         """현재 순서 화자의 발언 생성"""
         speaker_idx = (self.start_speak_idx + self.current_speak_idx) % 2
         speaker = self.speakers[speaker_idx]
@@ -98,10 +99,10 @@ class Debate:
 
         # 발언 진행
         if len(self.chat_history) == 0:
-            response = speaker.first_speak(self.topic, is_pro)
+            response = await speaker.first_speak(self.topic, is_pro)
         else:
             remain_cnt = (self.max_speak_idx - self.current_speak_idx) // 2 + 1  # 남은 횟수는 인덱스 + 1
-            response = speaker.next_speak(self.topic, is_pro, self.chat_history, remain_cnt)
+            response = await speaker.next_speak(self.topic, is_pro, self.chat_history, remain_cnt)
 
         # 발언 저장
         id = str(uuid.uuid4())
@@ -112,9 +113,9 @@ class Debate:
 
         return speaker_idx, chat
 
-    def _calculate_debate_result(self) -> DebateResult:
+    async def _calculate_debate_result(self) -> DebateResult:
         """토론 결과 점수 계산"""
-        scores = self.moderator.analyze(self.topic, self.chat_history)
+        scores = await self.moderator.analyze(self.topic, self.chat_history)
 
         result = DebateResult(
             pro_scores=scores[self.pro.id],
@@ -139,9 +140,9 @@ class Debate:
     def debate_result(self) -> DebateResult | None:
         return self._debate_result
 
-    def moderator_interrupt(self, message: str) -> str:
+    async def moderator_interrupt(self, message: str) -> str:
         if len(message) == 0:
-            message = self.moderator.interrupt(self.topic, self.chat_history)
+            message = await self.moderator.interrupt(self.topic, self.chat_history)
 
         id = str(uuid.uuid4())
         self.chat_history.append(Chat(id=id, speaker_idx=-1, speaker_id="", emotion="", message=message))

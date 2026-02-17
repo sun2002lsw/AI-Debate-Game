@@ -12,7 +12,7 @@ class Debater:
         self.persona = persona
         self.llm = llm
 
-    def want_first(self, topic: str, is_pro: bool) -> tuple[bool, str]:
+    async def want_first(self, topic: str, is_pro: bool) -> tuple[bool, str]:
         messages: list[BaseMessage] = []
 
         system_prompt = prompts.get_system_prompt(topic, is_pro, self.persona)
@@ -22,12 +22,12 @@ class Debater:
         messages.append(HumanMessage(content=first_prompt))
 
         structured_llm = self.llm.with_structured_output(schemas.FirstSpeakDecision)
-        response = structured_llm.invoke(messages)
+        response = await structured_llm.ainvoke(messages)
 
         result: schemas.FirstSpeakDecision = response  # type: ignore[assignment]
         return result.want_first, result.reason
 
-    def first_speak(self, topic: str, is_pro: bool) -> schemas.SpeakResponse:
+    async def first_speak(self, topic: str, is_pro: bool) -> schemas.SpeakResponse:
         messages: list[BaseMessage] = []
 
         system_prompt = prompts.get_system_prompt(topic, is_pro, self.persona)
@@ -37,12 +37,12 @@ class Debater:
         messages.append(HumanMessage(content=first_speak_prompt))
 
         structured_llm = self.llm.with_structured_output(schemas.SpeakResponse)
-        response = structured_llm.invoke(messages)
+        response = await structured_llm.ainvoke(messages)
 
         result: schemas.SpeakResponse = response  # type: ignore[assignment]
         return result
 
-    def next_speak(
+    async def next_speak(
         self, topic: str, is_pro: bool, chat_history: list[Chat], remain_cnt: int
     ) -> schemas.SpeakResponse:
         messages: list[BaseMessage] = []
@@ -55,7 +55,7 @@ class Debater:
         messages.append(HumanMessage(content=next_speak_prompt))
 
         structured_llm = self.llm.with_structured_output(schemas.SpeakResponse)
-        response = structured_llm.invoke(messages)
+        response = await structured_llm.ainvoke(messages)
 
         result: schemas.SpeakResponse = response  # type: ignore[assignment]
         return result

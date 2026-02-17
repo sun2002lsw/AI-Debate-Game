@@ -9,7 +9,7 @@ class Moderator:
     def __init__(self, llm: BaseChatModel):
         self.llm = llm
 
-    def interrupt(self, topic: str, chat_history: list[Chat]) -> str:
+    async def interrupt(self, topic: str, chat_history: list[Chat]) -> str:
         messages: list[BaseMessage] = []
 
         system_prompt = prompts.get_system_prompt(topic)
@@ -20,12 +20,12 @@ class Moderator:
         messages.append(HumanMessage(content=interrupt_prompt))
 
         structured_llm = self.llm.with_structured_output(schemas.InterruptResponse)
-        response = structured_llm.invoke(messages)
+        response = await structured_llm.ainvoke(messages)
 
         result: schemas.InterruptResponse = response  # type: ignore[assignment]
         return result.message
 
-    def analyze(
+    async def analyze(
         self, topic: str, chat_history: list[Chat]
     ) -> dict[str, schemas.DebateScore]:
         messages: list[BaseMessage] = []
@@ -38,7 +38,7 @@ class Moderator:
         messages.append(HumanMessage(content=analyze_prompt))
 
         structured_llm = self.llm.with_structured_output(schemas.AnalyzeResponse)
-        response = structured_llm.invoke(messages)
+        response = await structured_llm.ainvoke(messages)
 
         result: schemas.AnalyzeResponse = response  # type: ignore[assignment]
         return result.scores
