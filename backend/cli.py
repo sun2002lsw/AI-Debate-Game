@@ -1,5 +1,6 @@
 import asyncio
 import msvcrt
+import uuid
 
 from dotenv import load_dotenv
 
@@ -51,7 +52,9 @@ async def main():
         print_debate_result(result)
 
     # 토론 구성
+    debate_id = uuid.uuid4().hex[:8]
     debate = Debate(
+        id=debate_id,
         topic=topic,
         speak_cnt=speak_cnt,
         first_speak_deciding_noti=first_speak_deciding_noti,

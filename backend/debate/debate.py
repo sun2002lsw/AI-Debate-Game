@@ -12,6 +12,7 @@ from .schemas import FirstSpeakResult, DebateResult
 class Debate:
     def __init__(
         self,
+        id: str,
         topic: str,
         speak_cnt: int,
         first_speak_deciding_noti: Callable[[], None],
@@ -23,6 +24,7 @@ class Debate:
         con: Debater,
         evaluator: Evaluator,
     ):
+        self.id = id
         self.topic = topic
         self.max_speak_idx = speak_cnt * 2 - 1  # 다들 각자 한번씩 말해야 하니깐
 
@@ -46,8 +48,8 @@ class Debate:
         self.current_speak_idx = 0
         self.chat_history: list[Speak] = []
 
-    def start(self):
-        asyncio.create_task(self._run())
+    def start(self) -> asyncio.Task[None]:
+        return asyncio.create_task(self._run())
 
     async def _run(self):
         """선공 결정 → 발언 루프 → 채점 (블로킹)"""
